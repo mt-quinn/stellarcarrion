@@ -20,6 +20,7 @@ const CONFIG = {
   aimStickRadius: 72,
   aimZoneSize: 196,
   pickupRadius: 4.8,
+  minimapRange: 175,
   playerSpawnZ: 190,
   spawnSafeRadius: 92,
   introGraceDuration: 22,
@@ -610,6 +611,7 @@ class Ship {
 
     this.lastDamageTime = this.game.elapsed;
     amount *= this.incomingDamageMultiplier;
+    const indestructibleReactor = this.faction === 'player' && component.type === 'reactor';
 
     if (this.shield > 0 && this.getFunctionalCount('shield') > 0) {
       const absorbed = Math.min(this.shield, amount);
@@ -621,7 +623,9 @@ class Ship {
       }
     }
 
-    component.hp -= amount;
+    if (!indestructibleReactor) {
+      component.hp -= amount;
+    }
     this.hull = Math.max(0, this.hull - amount);
 
     if (component.hp <= 0 && !component.destroyed) {
@@ -685,6 +689,8 @@ class Game {
   constructor() {
     this.app = document.getElementById('app');
     this.aimPad = document.querySelector('.aim-pad');
+    this.aimMinimap = document.getElementById('aim-minimap');
+    this.aimMinimapContext = this.aimMinimap.getContext('2d');
     this.aimKnob = document.getElementById('aim-knob');
     this.movementIndicator = document.getElementById('movement-indicator');
     this.hud = {
@@ -887,6 +893,12 @@ class Game {
       width: `${width}px`,
       height: `${height}px`
     });
+
+    const aimRect = this.aimPad.getBoundingClientRect();
+    const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    this.aimMinimap.width = Math.floor(aimRect.width * scale);
+    this.aimMinimap.height = Math.floor(aimRect.height * scale);
+    this.aimMinimapContext.setTransform(scale, 0, 0, scale, 0, 0);
   }
 
   clearRunWorld() {
@@ -1950,6 +1962,145 @@ class Game {
     this.hud.shieldBar.style.width = `${shieldPercent}%`;
     this.hud.run.textContent = formatTime(this.runTime);
     this.hud.demon.textContent = formatTime(Math.max(0, this.nextDemonAt - this.runTime));
+    this.drawAimMinimap();
+  }
+
+  drawAimMinimap() {
+    const context = this.aimMinimapContext;
+    if (!context || !this.player) {
+      return;
+    }
+
+    const width = this.aimMinimap.clientWidth;
+    const height = this.aimMinimap.clientHeight;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radarRadius = Math.min(width, height) * 0.5 - 8;
+    const range = CONFIG.minimapRange;
+    const playerPosition = this.player.getWorldPosition();
+    const forward = this.player.aimDirection.lengthSq() > 0.01
+      ? new THREE.Vector2(this.player.aimDirection.x, this.player.aimDirection.z).normalize()
+      : new THREE.Vector2(0, -1);
+
+    context.clearRect(0, 0, width, height);
+
+    context.save();
+    context.beginPath();
+    context.arc(centerX, centerY, radarRadius, 0, Math.PI * 2);
+    context.clip();
+
+    const gradient = context.createRadialGradient(centerX, centerY, radarRadius * 0.12, centerX, centerY, radarRadius);
+    gradient.addColorStop(0, 'rgba(18, 28, 30, 0.62)');
+    gradient.addColorStop(0.68, 'rgba(10, 14, 20, 0.82)');
+    gradient.addColorStop(1, 'rgba(8, 10, 14, 0.96)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    context.strokeStyle = 'rgba(125, 193, 187, 0.12)';
+    context.lineWidth = 1;
+    for (const ring of [0.33, 0.66, 1]) {
+      context.beginPath();
+      context.arc(centerX, centerY, radarRadius * ring, 0, Math.PI * 2);
+      context.stroke();
+    }
+
+    context.beginPath();
+    context.moveTo(centerX - radarRadius, centerY);
+    context.lineTo(centerX + radarRadius, centerY);
+    context.moveTo(centerX, centerY - radarRadius);
+    context.lineTo(centerX, centerY + radarRadius);
+    context.stroke();
+
+    const sweepAngle = (this.elapsed * 0.8) % (Math.PI * 2);
+    const sweepGradient = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, radarRadius);
+    sweepGradient.addColorStop(0, 'rgba(125, 193, 187, 0.16)');
+    sweepGradient.addColorStop(1, 'rgba(125, 193, 187, 0)');
+    context.save();
+    context.translate(centerX, centerY);
+    context.rotate(sweepAngle);
+    context.fillStyle = sweepGradient;
+    context.beginPath();
+    context.moveTo(0, 0);
+    context.arc(0, 0, radarRadius, -0.14, 0.14);
+    context.closePath();
+    context.fill();
+    context.restore();
+
+    const plotContact = (worldPosition, drawFn) => {
+      const dx = worldPosition.x - playerPosition.x;
+      const dz = worldPosition.z - playerPosition.z;
+      const distance = Math.hypot(dx, dz);
+      if (distance > range) {
+        return;
+      }
+
+      const px = centerX + (dx / range) * radarRadius;
+      const py = centerY + (dz / range) * radarRadius;
+      drawFn(px, py, distance / range);
+    };
+
+    for (const zone of this.extractionZones) {
+      plotContact(zone.position, (x, y) => {
+        context.strokeStyle = 'rgba(153, 206, 129, 0.92)';
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.arc(x, y, 6.5, 0, Math.PI * 2);
+        context.stroke();
+        context.beginPath();
+        context.arc(x, y, 3, 0, Math.PI * 2);
+        context.stroke();
+      });
+    }
+
+    for (const ship of this.ships) {
+      if (ship.dead || ship === this.player) {
+        continue;
+      }
+
+      if (ship.kind === 'carrion') {
+        plotContact(ship.getWorldPosition(), (x, y) => {
+          context.fillStyle = 'rgba(206, 183, 132, 0.92)';
+          context.fillRect(x - 2, y - 2, 4, 4);
+        });
+        continue;
+      }
+
+      const color = {
+        pirate: 'rgba(235, 113, 87, 0.95)',
+        scavenger: 'rgba(214, 176, 103, 0.9)',
+        law: 'rgba(132, 184, 199, 0.92)'
+      }[ship.faction] ?? 'rgba(236, 228, 207, 0.9)';
+
+      plotContact(ship.getWorldPosition(), (x, y) => {
+        context.fillStyle = color;
+        context.beginPath();
+        context.arc(x, y, ship.faction === 'pirate' ? 3.5 : 3, 0, Math.PI * 2);
+        context.fill();
+      });
+    }
+
+    for (const demon of this.warpDemons) {
+      plotContact(demon.mesh.position, (x, y) => {
+        context.strokeStyle = 'rgba(215, 101, 89, 0.96)';
+        context.lineWidth = 1.4;
+        context.beginPath();
+        context.moveTo(x - 5, y - 5);
+        context.lineTo(x + 5, y + 5);
+        context.moveTo(x + 5, y - 5);
+        context.lineTo(x - 5, y + 5);
+        context.stroke();
+      });
+    }
+
+    context.fillStyle = 'rgba(236, 228, 207, 0.98)';
+    context.beginPath();
+    context.moveTo(centerX + forward.x * 10, centerY + forward.y * 10);
+    context.lineTo(centerX - forward.y * 5, centerY + forward.x * 5);
+    context.lineTo(centerX + forward.y * 5, centerY - forward.x * 5);
+    context.closePath();
+    context.fill();
+
+    context.restore();
   }
 
   showMessage(text) {

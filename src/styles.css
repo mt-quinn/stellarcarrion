@@ -600,7 +600,17 @@ canvas {
   width: 182px;
   height: 182px;
   border-radius: 50%;
+  overflow: hidden;
   pointer-events: none;
+}
+
+.aim-minimap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.95;
 }
 
 .aim-pad-ring,
@@ -614,6 +624,9 @@ canvas {
 
 .aim-pad-ring {
   inset: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 240, 212, 0.04),
+    inset 0 0 24px rgba(8, 14, 20, 0.45);
 }
 
 .aim-knob,
