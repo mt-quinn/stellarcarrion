@@ -134,12 +134,34 @@
   knob offset to stay debuggable and predictable on touch devices.
 - A production build succeeds with the current scaffold, but the bundled JS is
   still large enough for Vite to warn about chunk size.
+- The current runtime already has a good cargo manifest interaction model, so
+  the hangar should reuse that slot-based clarity rather than introduce a
+  separate abstract inventory language.
+- The new hangar layer needs to derive run values from the active ship build:
+  hull, shield, speed, cargo capacity, FTL-safe storage, extraction spool time,
+  processing yield, and scanner radius all want to come from persistent chassis
+  and component data instead of fixed config constants.
+- The old end-of-run overlay is now the biggest architectural mismatch in the
+  prototype because it bypasses the intended between-runs economy loop.
+- A practical first hangar slice works well as a full-screen overlay rather
+  than a separate 3D base scene, because it connects the meta loop immediately
+  without forcing more scene/rendering complexity before the ship systems are proven.
+- Seeding the hangar with a little starting salvage and one alternate chassis
+  is useful for prototype evaluation because it lets the user feel repairs,
+  swapping, and fabrication right away instead of grinding from zero.
+- The right abstraction for this phase is an `activeShip` build that derives
+  run-time cargo, FTL-safe storage, extraction spool, minimap range, power
+  budget, and hull/shield values from chassis + equipped components.
 
 ## Technical Decisions
 | Decision | Rationale |
 |----------|-----------|
 | Start with a discovery interview instead of direct documentation | Avoids producing a shallow or contradictory GDD |
 | Prioritize the highest-leverage questions first | The concept spans multiple intertwined systems and needs top-down clarification |
+| Reuse the existing Three.js playfield and build the hangar as an overlay layer first | Lets the prototype gain meta-loop functionality without pausing for a full 3D base scene |
+| Treat the hangar as the default state on boot after this phase | Makes the run and repair/crafting loops legibly connected |
+| Keep weapons fixed in this hangar pass and focus progression on chassis plus non-weapon ship systems | Delivers the between-runs loop now without exploding the scope of ship-layout logic |
+| Auto-archive extracted blueprint items into permanent unlocks when returning to hangar | Keeps the stash readable and turns blueprints into immediate metagame progress |
 
 ## Issues Encountered
 | Issue | Resolution |

@@ -24,15 +24,37 @@
 - Separated transient combat VFX from damaging projectile logic to avoid bad collisions and cleanup issues
 - Added light scanline/vignette treatment to reinforce the digital horror presentation
 - Installed dependencies and verified a production build with Vite
+- Audited the current runtime to map where a proper between-runs hangar layer
+  should replace the old run summary flow
+- Added the first persistent blueprint/component/chassis helper data to
+  `src/main.js` as groundwork for hangar crafting and equipment
+- Re-framed the planning files around a new prototype-expansion phase focused on
+  hangar UI, persistence, and between-run ship management
+- Replaced the old run summary popup with a full-screen hangar layer featuring
+  an active ship bay, stash cache, and blueprint fabricator
+- Added an `activeShip` progression model with a free replacement hull,
+  starter components, seeded stash items, blueprint unlock tracking, and
+  persistent resources
+- Routed launches through the hangar and made extraction/death return there
+  with the correct persistence outcomes: extracted safe loot/stored resources
+  on success and a free replacement ship on death
+- Made run-time cargo capacity, safe storage, extraction spool time, minimap
+  range, and processing efficiency derive from the active ship build
+- Added between-run actions for hull repair, crafting components/chassis,
+  installing stash items, and breaking salvage down at base
+- Updated loot generation so runs now produce blueprint items, chassis,
+  structured components, and salvage that connect into the hangar systems
 
 ### Test Results
 | Test | Expected | Actual | Status |
 |------|----------|--------|--------|
 | `npm install` | Project dependencies install successfully | Installed `three` and `vite`; npm reported 2 moderate vulnerabilities | pass |
 | `npm run build` | Prototype compiles into a production bundle | Build succeeded and emitted `dist/`; Vite warned the main JS chunk is over 500 kB | pass |
+| `npm run build` after hangar integration | Prototype still compiles after adding the between-run layer | Build succeeded; bundle output is `dist/assets/index-BH5sizca.js` with the same chunk-size warning | pass |
 
 ### Errors
 | Error | Resolution |
 |-------|------------|
 | Default sandbox install path was insufficient for dependency installation | Re-ran `npm install` with escalated permissions |
 | Vite chunk-size warning on production build | Logged as a follow-up optimization rather than blocking the first slice |
+| The old end-of-run flow still assumed a modal summary and fixed ship stats | Replaced it with a hangar-driven flow and derived run stats from the active ship build |

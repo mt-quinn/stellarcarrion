@@ -4,6 +4,12 @@ import './styles.css';
 const RARITIES = ['Corroded', 'Common', 'Rare', 'Epic', 'Legendary'];
 const RARITY_COLORS = [0x667187, 0x8fc4ff, 0x7e7cff, 0xd660ff, 0xffbd59];
 const RESOURCE_KEYS = ['scrap', 'tech', 'biomass', 'credits'];
+const RESOURCE_LABELS = {
+  scrap: 'Scrap',
+  tech: 'Tech',
+  biomass: 'Biomass',
+  credits: 'Credits'
+};
 
 const CONFIG = {
   worldWidth: 340,
@@ -184,6 +190,161 @@ const SHIP_ARCHETYPES = {
   }
 };
 
+const SLOT_ORDER = ['reactor', 'shield', 'engine', 'hull', 'cargo', 'ftl', 'processor', 'scanner'];
+const SLOT_LABELS = {
+  reactor: 'Reactor',
+  shield: 'Shield Grid',
+  engine: 'Engine',
+  hull: 'Hull Bracing',
+  cargo: 'Cargo Cells',
+  ftl: 'FTL Drive',
+  processor: 'Salvage Processor',
+  scanner: 'Scanner'
+};
+const RARITY_FACTORS = [0.72, 1, 1.24, 1.52, 1.84];
+
+const COMPONENT_BLUEPRINTS = {
+  reactor_spark: {
+    id: 'reactor_spark',
+    name: 'Spark Reactor',
+    slotType: 'reactor',
+    description: 'Extra output ripped from industrial salvage rigs.',
+    cost: { scrap: 16, tech: 10, biomass: 0, credits: 12 },
+    powerUse: 0,
+    stats: { powerBudget: 4, maxShield: 2 }
+  },
+  shield_lattice: {
+    id: 'shield_lattice',
+    name: 'Lattice Shield',
+    slotType: 'shield',
+    description: 'Adds a tougher but simple defensive screen.',
+    cost: { scrap: 12, tech: 14, biomass: 0, credits: 10 },
+    powerUse: 3,
+    stats: { maxShield: 8 }
+  },
+  ion_drive: {
+    id: 'ion_drive',
+    name: 'Ion Drive',
+    slotType: 'engine',
+    description: 'Trade heat for better chase and escape speed.',
+    cost: { scrap: 14, tech: 10, biomass: 0, credits: 10 },
+    powerUse: 2,
+    stats: { speed: 6 }
+  },
+  hull_bracing: {
+    id: 'hull_bracing',
+    name: 'Hull Bracing',
+    slotType: 'hull',
+    description: 'Bolted reinforcement for longer time under fire.',
+    cost: { scrap: 18, tech: 6, biomass: 0, credits: 8 },
+    powerUse: 1,
+    stats: { maxHull: 10 }
+  },
+  cargo_web: {
+    id: 'cargo_web',
+    name: 'Cargo Web',
+    slotType: 'cargo',
+    description: 'Extends loose-hold capacity for greedier runs.',
+    cost: { scrap: 12, tech: 8, biomass: 0, credits: 8 },
+    powerUse: 1,
+    stats: { cargoCapacity: 3 }
+  },
+  stowcore_ftl: {
+    id: 'stowcore_ftl',
+    name: 'Stowcore FTL',
+    slotType: 'ftl',
+    description: 'Improves safe jump volume and shortens spool time.',
+    cost: { scrap: 10, tech: 16, biomass: 0, credits: 14 },
+    powerUse: 2,
+    stats: { safeStorageCapacity: 2, extractionDuration: -5 }
+  },
+  reclamation_processor: {
+    id: 'reclamation_processor',
+    name: 'Reclamation Processor',
+    slotType: 'processor',
+    description: 'Improves in-field grinding yields.',
+    cost: { scrap: 14, tech: 10, biomass: 4, credits: 8 },
+    powerUse: 1,
+    stats: { processingYieldMultiplier: 0.22 }
+  },
+  pulse_scanner: {
+    id: 'pulse_scanner',
+    name: 'Pulse Scanner',
+    slotType: 'scanner',
+    description: 'Expands the tactical scan radius of the ship.',
+    cost: { scrap: 10, tech: 12, biomass: 0, credits: 8 },
+    powerUse: 1,
+    stats: { minimapRange: 42 }
+  }
+};
+
+const CHASSIS_BLUEPRINTS = {
+  starter_cutter: {
+    id: 'starter_cutter',
+    name: 'Starter Cutter',
+    description: 'The free replacement hull. Ugly, dependable, expendable.',
+    cost: { scrap: 0, tech: 0, biomass: 0, credits: 0 },
+    stats: {
+      maxHull: 24,
+      maxShield: 12,
+      speed: 36,
+      cargoCapacity: 12,
+      safeStorageCapacity: 4,
+      extractionDuration: 30,
+      powerBudget: 10,
+      minimapRange: CONFIG.minimapRange,
+      processingYieldMultiplier: 1
+    }
+  },
+  rig_runner: {
+    id: 'rig_runner',
+    name: 'Rig Runner',
+    description: 'A lighter scavenger frame built to run hot and fast.',
+    cost: { scrap: 28, tech: 18, biomass: 0, credits: 22 },
+    stats: {
+      maxHull: 20,
+      maxShield: 10,
+      speed: 42,
+      cargoCapacity: 13,
+      safeStorageCapacity: 4,
+      extractionDuration: 28,
+      powerBudget: 11,
+      minimapRange: CONFIG.minimapRange + 10,
+      processingYieldMultiplier: 1
+    }
+  },
+  carrion_lugger: {
+    id: 'carrion_lugger',
+    name: 'Carrion Lugger',
+    description: 'A heavier salvage hauler built to absorb punishment.',
+    cost: { scrap: 34, tech: 20, biomass: 8, credits: 26 },
+    stats: {
+      maxHull: 32,
+      maxShield: 16,
+      speed: 30,
+      cargoCapacity: 15,
+      safeStorageCapacity: 5,
+      extractionDuration: 32,
+      powerBudget: 12,
+      minimapRange: CONFIG.minimapRange - 8,
+      processingYieldMultiplier: 1.08
+    }
+  }
+};
+
+const DEFAULT_COMPONENT_BLUEPRINTS = Object.keys(COMPONENT_BLUEPRINTS);
+const DEFAULT_CHASSIS_BLUEPRINTS = ['starter_cutter', 'rig_runner'];
+const STARTER_COMPONENT_BY_SLOT = {
+  reactor: 'reactor_spark',
+  shield: 'shield_lattice',
+  engine: 'ion_drive',
+  hull: 'hull_bracing',
+  cargo: 'cargo_web',
+  ftl: 'stowcore_ftl',
+  processor: 'reclamation_processor',
+  scanner: 'pulse_scanner'
+};
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -210,6 +371,125 @@ function distanceXZ(a, b) {
   const dx = a.x - b.x;
   const dz = a.z - b.z;
   return Math.hypot(dx, dz);
+}
+
+function cloneCost(cost = {}) {
+  return {
+    scrap: cost.scrap ?? 0,
+    tech: cost.tech ?? 0,
+    biomass: cost.biomass ?? 0,
+    credits: cost.credits ?? 0
+  };
+}
+
+function scaleCost(cost = {}, factor = 1) {
+  return Object.fromEntries(
+    RESOURCE_KEYS.map((key) => [key, Math.max(0, Math.round((cost[key] ?? 0) * factor))])
+  );
+}
+
+function scaleStatsForRarity(stats, rarityIndex) {
+  const factor = RARITY_FACTORS[rarityIndex] ?? 1;
+  const scaled = {};
+
+  for (const [key, value] of Object.entries(stats)) {
+    if (key === 'processingYieldMultiplier') {
+      scaled[key] = Number((value * factor).toFixed(2));
+    } else if (key === 'extractionDuration') {
+      scaled[key] = Math.round(value * factor);
+    } else {
+      scaled[key] = Math.round(value * factor);
+    }
+  }
+
+  return scaled;
+}
+
+function describeStats(stats) {
+  const parts = [];
+  const labels = {
+    maxHull: 'Hull',
+    maxShield: 'Shield',
+    speed: 'Speed',
+    cargoCapacity: 'Cargo',
+    safeStorageCapacity: 'FTL Safe',
+    extractionDuration: 'Spool',
+    powerBudget: 'Power',
+    minimapRange: 'Scan',
+    processingYieldMultiplier: 'Yield'
+  };
+
+  for (const [key, value] of Object.entries(stats)) {
+    if (!value) {
+      continue;
+    }
+    if (key === 'processingYieldMultiplier') {
+      parts.push(`${labels[key]} +${Math.round(value * 100)}%`);
+      continue;
+    }
+    if (key === 'extractionDuration') {
+      const sign = value < 0 ? '' : '+';
+      parts.push(`${labels[key]} ${sign}${value}s`);
+      continue;
+    }
+    const sign = value < 0 ? '' : '+';
+    parts.push(`${labels[key]} ${sign}${value}`);
+  }
+
+  return parts.join(' • ');
+}
+
+function createComponentItem(blueprintId, { rarityIndex = 1, starter = false } = {}) {
+  const blueprint = COMPONENT_BLUEPRINTS[blueprintId];
+  return {
+    id: crypto.randomUUID(),
+    category: 'component',
+    blueprintId,
+    slotType: blueprint.slotType,
+    label: blueprint.name,
+    description: blueprint.description,
+    rarityIndex,
+    combineKey: `component-${blueprintId}`,
+    stats: scaleStatsForRarity(blueprint.stats, rarityIndex),
+    powerUse: blueprint.powerUse ?? 0,
+    modSlots: Math.max(0, rarityIndex),
+    starter
+  };
+}
+
+function createChassisItem(blueprintId, { starter = false } = {}) {
+  const blueprint = CHASSIS_BLUEPRINTS[blueprintId];
+  return {
+    id: crypto.randomUUID(),
+    category: 'chassis',
+    blueprintId,
+    label: blueprint.name,
+    description: blueprint.description,
+    rarityIndex: 1,
+    combineKey: null,
+    stats: { ...blueprint.stats },
+    starter
+  };
+}
+
+function createBlueprintItem(blueprintType, blueprintId) {
+  const source = blueprintType === 'chassis' ? CHASSIS_BLUEPRINTS[blueprintId] : COMPONENT_BLUEPRINTS[blueprintId];
+  return {
+    id: crypto.randomUUID(),
+    category: 'blueprint',
+    blueprintType,
+    blueprintId,
+    label: `${source.name} Blueprint`,
+    description: `Unlocks the ${source.name} fabrication pattern.`,
+    rarityIndex: 1,
+    combineKey: null
+  };
+}
+
+function formatCost(cost) {
+  return RESOURCE_KEYS.filter((key) => (cost[key] ?? 0) > 0)
+    .map((key) => `${RESOURCE_LABELS[key]} ${cost[key]}`)
+    .join(' • ');
 }
 
 function disposeMaterial(material) {
@@ -505,6 +785,7 @@ class Ship {
     this.target = null;
     this.disposition = Math.random();
     this.richness = options.richness ?? (archetypeKey === 'carrion' ? 1.3 : 1);
+    this.displayLabel = options.displayLabel ?? null;
     this.maxShield = options.maxShield ?? this.archetype.maxShield;
     this.shield = this.maxShield;
     this.maxHull = options.maxHull ?? this.archetype.maxHull;
@@ -658,7 +939,7 @@ class Ship {
     }
 
     if (this.faction === 'player') {
-      this.game.endRun(false, `${this.archetype.label} lost in the void.`);
+      this.game.endRun(false, `${this.displayLabel ?? this.archetype.label} lost in the void.`);
     }
 
     this.game.scene.remove(this.group);
@@ -688,12 +969,15 @@ class Ship {
 class Game {
   constructor() {
     this.app = document.getElementById('app');
+    this.hudRoot = document.getElementById('hud');
+    this.controlsOverlay = document.getElementById('controls-overlay');
     this.aimPad = document.querySelector('.aim-pad');
     this.aimMinimap = document.getElementById('aim-minimap');
     this.aimMinimapContext = this.aimMinimap.getContext('2d');
     this.aimKnob = document.getElementById('aim-knob');
     this.movementIndicator = document.getElementById('movement-indicator');
     this.hud = {
+      frame: document.getElementById('frame-value'),
       hull: document.getElementById('hull-value'),
       hullBar: document.getElementById('hull-bar'),
       shield: document.getElementById('shield-value'),
@@ -716,11 +1000,38 @@ class Game {
     this.manifestLabel = this.manifestToggle.querySelector('.mini-label');
     this.manifestClose = document.getElementById('manifest-close');
     this.messageLog = document.getElementById('message-log');
-    this.runOverlay = document.getElementById('run-overlay');
-    this.runOutcome = document.getElementById('run-outcome');
-    this.runTitle = document.getElementById('run-title');
-    this.runSummary = document.getElementById('run-summary');
-    this.restartButton = document.getElementById('restart-button');
+    this.hangar = {
+      overlay: document.getElementById('hangar-overlay'),
+      status: document.getElementById('hangar-status'),
+      launchStatus: document.getElementById('launch-status'),
+      launchButton: document.getElementById('launch-button'),
+      chassisName: document.getElementById('hangar-chassis-name'),
+      chassisTag: document.getElementById('hangar-chassis-tag'),
+      chassisDescription: document.getElementById('hangar-chassis-description'),
+      hullValue: document.getElementById('hangar-hull-value'),
+      hullBar: document.getElementById('hangar-hull-bar'),
+      powerValue: document.getElementById('hangar-power-value'),
+      speedValue: document.getElementById('hangar-speed-value'),
+      holdValue: document.getElementById('hangar-hold-value'),
+      scanValue: document.getElementById('hangar-scan-value'),
+      slotGrid: document.getElementById('ship-slot-grid'),
+      slotDetail: document.getElementById('slot-detail'),
+      repairButton: document.getElementById('repair-button'),
+      stashCount: document.getElementById('stash-count'),
+      stashDetail: document.getElementById('stash-detail'),
+      installButton: document.getElementById('install-button'),
+      stashScrapButton: document.getElementById('stash-scrap-button'),
+      stashGrid: document.getElementById('stash-grid'),
+      blueprintCount: document.getElementById('blueprint-count'),
+      componentBlueprintList: document.getElementById('component-blueprint-list'),
+      chassisBlueprintList: document.getElementById('chassis-blueprint-list'),
+      resources: {
+        scrap: document.getElementById('hangar-scrap'),
+        tech: document.getElementById('hangar-tech'),
+        biomass: document.getElementById('hangar-biomass'),
+        credits: document.getElementById('hangar-credits')
+      }
+    };
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x04070c);
@@ -749,14 +1060,13 @@ class Game {
     this.warpDemons = [];
     this.pointOfInterestMeshes = [];
     this.selectedCargoIndex = null;
+    this.selectedHangarSlot = 'reactor';
+    this.selectedStashIndex = null;
     this.cargoSlots = Array(CONFIG.cargoCapacity).fill(null);
     this.isCargoPanelOpen = false;
     this.pendingResources = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
-    this.meta = {
-      resources: { scrap: 0, tech: 0, biomass: 0, credits: 0 },
-      stash: [],
-      runCount: 0
-    };
+    this.meta = null;
+    this.currentRunStats = null;
     this.runActive = false;
     this.runTime = 0;
     this.nextDemonAt = CONFIG.demonSpawnInterval;
@@ -767,7 +1077,8 @@ class Game {
     this.input = new InputManager(this);
     this.setupWorld();
     this.bindUI();
-    this.startRun();
+    this.bootstrapProgression();
+    this.enterHangar('Docked and awaiting launch.');
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.renderer.setAnimationLoop(() => this.tick());
@@ -874,10 +1185,263 @@ class Game {
       this.setCargoPanelOpen(!this.isCargoPanelOpen);
     });
     this.manifestClose.addEventListener('click', () => this.setCargoPanelOpen(false));
-    this.restartButton.addEventListener('click', () => {
-      this.runOverlay.classList.add('hidden');
-      this.startRun();
+    this.hangar.launchButton.addEventListener('click', () => this.startRun());
+    this.hangar.repairButton.addEventListener('click', () => this.repairActiveShip());
+    this.hangar.installButton.addEventListener('click', () => this.installSelectedStashItem());
+    this.hangar.stashScrapButton.addEventListener('click', () => this.scrapSelectedStashItem());
+  }
+
+  bootstrapProgression() {
+    this.meta = {
+      resources: { scrap: 84, tech: 62, biomass: 18, credits: 76 },
+      stash: [
+        createComponentItem('shield_lattice', { rarityIndex: 2 }),
+        createComponentItem('ion_drive', { rarityIndex: 2 }),
+        createComponentItem('cargo_web', { rarityIndex: 1 }),
+        createComponentItem('pulse_scanner', { rarityIndex: 1 }),
+        createChassisItem('rig_runner')
+      ],
+      runCount: 0,
+      unlockedComponentBlueprints: [...DEFAULT_COMPONENT_BLUEPRINTS],
+      unlockedChassisBlueprints: [...DEFAULT_CHASSIS_BLUEPRINTS],
+      activeShip: this.createReplacementShipState()
+    };
+    this.sortStash();
+  }
+
+  createReplacementShipState() {
+    const equipped = {};
+    for (const slot of SLOT_ORDER) {
+      equipped[slot] = createComponentItem(STARTER_COMPONENT_BY_SLOT[slot], {
+        rarityIndex: 0,
+        starter: true
+      });
+    }
+
+    const chassis = createChassisItem('starter_cutter', { starter: true });
+    const build = this.computeShipBuild({
+      chassis,
+      equipped,
+      currentHull: CHASSIS_BLUEPRINTS.starter_cutter.stats.maxHull
     });
+
+    return {
+      chassis,
+      equipped,
+      currentHull: build.maxHull
+    };
+  }
+
+  computeShipBuild(shipState) {
+    const fallbackShip = shipState
+      ?? this.meta?.activeShip
+      ?? {
+        chassis: createChassisItem('starter_cutter', { starter: true }),
+        equipped: Object.fromEntries(
+          SLOT_ORDER.map((slot) => [
+            slot,
+            createComponentItem(STARTER_COMPONENT_BY_SLOT[slot], {
+              rarityIndex: 0,
+              starter: true
+            })
+          ])
+        ),
+        currentHull: CHASSIS_BLUEPRINTS.starter_cutter.stats.maxHull
+      };
+    const source = fallbackShip;
+    const chassisBlueprint = CHASSIS_BLUEPRINTS[source.chassis.blueprintId];
+    const stats = {
+      maxHull: chassisBlueprint.stats.maxHull,
+      maxShield: chassisBlueprint.stats.maxShield,
+      speed: chassisBlueprint.stats.speed,
+      cargoCapacity: chassisBlueprint.stats.cargoCapacity,
+      safeStorageCapacity: chassisBlueprint.stats.safeStorageCapacity,
+      extractionDuration: chassisBlueprint.stats.extractionDuration,
+      powerBudget: chassisBlueprint.stats.powerBudget,
+      minimapRange: chassisBlueprint.stats.minimapRange,
+      processingYieldMultiplier: chassisBlueprint.stats.processingYieldMultiplier ?? 1
+    };
+    let powerUse = 0;
+
+    for (const slot of SLOT_ORDER) {
+      const item = source.equipped?.[slot];
+      if (!item) {
+        continue;
+      }
+
+      for (const [key, value] of Object.entries(item.stats ?? {})) {
+        if (key === 'processingYieldMultiplier') {
+          stats[key] = Number(((stats[key] ?? 1) + value).toFixed(2));
+        } else {
+          stats[key] = Math.round((stats[key] ?? 0) + value);
+        }
+      }
+
+      powerUse += item.powerUse ?? COMPONENT_BLUEPRINTS[item.blueprintId]?.powerUse ?? 0;
+    }
+
+    stats.cargoCapacity = Math.max(6, Math.round(stats.cargoCapacity));
+    stats.safeStorageCapacity = clamp(
+      Math.round(stats.safeStorageCapacity),
+      1,
+      stats.cargoCapacity
+    );
+    stats.extractionDuration = Math.max(10, Math.round(stats.extractionDuration));
+    stats.minimapRange = Math.max(80, Math.round(stats.minimapRange));
+    stats.maxHull = Math.max(8, Math.round(stats.maxHull));
+    stats.maxShield = Math.max(0, Math.round(stats.maxShield));
+
+    return {
+      ...stats,
+      chassisItem: source.chassis,
+      equipped: source.equipped,
+      currentHull: clamp(source.currentHull ?? stats.maxHull, 0, stats.maxHull),
+      powerUse,
+      validPower: powerUse <= stats.powerBudget
+    };
+  }
+
+  getCurrentCargoCapacity() {
+    return this.currentRunStats?.cargoCapacity ?? CONFIG.cargoCapacity;
+  }
+
+  getSafeStorageCapacity() {
+    return this.currentRunStats?.safeStorageCapacity ?? CONFIG.safeStorageCapacity;
+  }
+
+  getCurrentExtractionDuration() {
+    return this.currentRunStats?.extractionDuration ?? CONFIG.extractionDuration;
+  }
+
+  getCurrentMinimapRange() {
+    return this.currentRunStats?.minimapRange ?? CONFIG.minimapRange;
+  }
+
+  getCurrentProcessingMultiplier() {
+    return this.currentRunStats?.processingYieldMultiplier ?? 1;
+  }
+
+  getBaseProcessingMultiplier() {
+    const build = this.computeShipBuild();
+    return Number((build.processingYieldMultiplier + 0.55).toFixed(2));
+  }
+
+  sortStash() {
+    if (!this.meta?.stash) {
+      return;
+    }
+
+    const categoryOrder = { chassis: 0, component: 1, mod: 2, blueprint: 3, resource: 4 };
+    this.meta.stash.sort((a, b) => {
+      const categoryDelta = (categoryOrder[a.category] ?? 9) - (categoryOrder[b.category] ?? 9);
+      if (categoryDelta !== 0) {
+        return categoryDelta;
+      }
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  canAffordCost(cost, resources = this.meta.resources) {
+    return RESOURCE_KEYS.every((key) => (resources[key] ?? 0) >= (cost[key] ?? 0));
+  }
+
+  spendResources(cost) {
+    if (!this.canAffordCost(cost)) {
+      return false;
+    }
+    for (const key of RESOURCE_KEYS) {
+      this.meta.resources[key] -= cost[key] ?? 0;
+    }
+    return true;
+  }
+
+  gainResources(cost) {
+    for (const key of RESOURCE_KEYS) {
+      this.meta.resources[key] += cost[key] ?? 0;
+    }
+  }
+
+  getSelectedStashItem() {
+    return this.selectedStashIndex === null ? null : this.meta.stash[this.selectedStashIndex] ?? null;
+  }
+
+  getItemCategoryLabel(item) {
+    return {
+      component: SLOT_LABELS[item.slotType] ?? 'Component',
+      chassis: 'Chassis',
+      blueprint: 'Blueprint',
+      mod: 'Mod',
+      resource: 'Resource'
+    }[item.category] ?? 'Loot';
+  }
+
+  getInventoryItemStats(item) {
+    if (!item) {
+      return '';
+    }
+
+    if (item.category === 'component') {
+      const statText = describeStats(item.stats ?? {});
+      return [RARITIES[item.rarityIndex], statText].filter(Boolean).join(' • ');
+    }
+
+    if (item.category === 'chassis') {
+      return describeStats(CHASSIS_BLUEPRINTS[item.blueprintId].stats);
+    }
+
+    if (item.category === 'resource') {
+      return `${RESOURCE_LABELS[item.resourceKey]} +${item.amount}`;
+    }
+
+    if (item.category === 'mod') {
+      return RARITIES[item.rarityIndex];
+    }
+
+    return '';
+  }
+
+  isStashItemInstallable(item) {
+    return Boolean(item && (item.category === 'component' || item.category === 'chassis'));
+  }
+
+  isStashItemCompatibleWithSlot(item, slot) {
+    if (!item) {
+      return false;
+    }
+    if (item.category === 'component') {
+      return item.slotType === slot;
+    }
+    return false;
+  }
+
+  getRepairPreview(build = this.computeShipBuild()) {
+    const missingHull = Math.max(0, Math.ceil(build.maxHull - this.meta.activeShip.currentHull));
+    const available = { ...this.meta.resources };
+    const totalCost = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
+    let repairAmount = 0;
+
+    while (repairAmount < missingHull) {
+      const pointCost = {
+        scrap: 1,
+        tech: repairAmount % 2 === 0 ? 0 : 1,
+        biomass: 0,
+        credits: 1
+      };
+      if (!this.canAffordCost(pointCost, available)) {
+        break;
+      }
+      for (const key of RESOURCE_KEYS) {
+        available[key] -= pointCost[key] ?? 0;
+        totalCost[key] += pointCost[key] ?? 0;
+      }
+      repairAmount += 1;
+    }
+
+    return {
+      missingHull,
+      repairAmount,
+      cost: totalCost
+    };
   }
 
   resize() {
@@ -937,35 +1501,363 @@ class Game {
     this.extractionZones = [];
     this.warpDemons = [];
     this.pointOfInterestMeshes = [];
+    this.player = null;
   }
 
   startRun() {
+    const build = this.computeShipBuild();
+    if (!build.validPower) {
+      this.showMessage('Power grid overloaded. Refit the ship before launch.');
+      this.renderHangar();
+      return;
+    }
+
     this.clearRunWorld();
     this.runActive = true;
+    this.currentRunStats = build;
     this.runTime = 0;
     this.nextDemonAt = CONFIG.demonSpawnInterval;
     this.extractionTimer = 0;
     this.currentExtractionZone = null;
     this.wantedTimer = 0;
-    this.cargoSlots = Array(CONFIG.cargoCapacity).fill(null);
+    this.cargoSlots = Array(build.cargoCapacity).fill(null);
     this.pendingResources = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
     this.selectedCargoIndex = null;
     this.isCargoPanelOpen = false;
+    this.selectedStashIndex = null;
     this.cargoPanel.classList.add('hidden');
     this.manifestToggle.classList.add('hidden');
     this.hud.ftlTimer.classList.add('hidden');
+    this.hangar.overlay.classList.add('hidden');
     this.meta.runCount += 1;
 
     this.player = new Ship(this, 'player', new THREE.Vector3(0, 0, CONFIG.playerSpawnZ), {
-      powerBudget: 14
+      maxHull: build.maxHull,
+      maxShield: build.maxShield,
+      speed: build.speed,
+      powerBudget: build.powerBudget,
+      processingSpeed: build.processingYieldMultiplier,
+      displayLabel: build.chassisItem.label
     });
+    this.player.hull = Math.max(1, build.currentHull);
+    this.player.shield = build.maxShield;
     this.ships.push(this.player);
 
+    this.hud.frame.textContent = build.chassisItem.label;
     this.generateExtractionZones();
     this.generateSparseMap();
-    this.showMessage('Run started. Explore, scavenge, and make the jump alive.');
+    this.showMessage(`Run started in ${build.chassisItem.label}. Explore, scavenge, and make the jump alive.`);
     this.refreshCargoUI();
     this.refreshHUD();
+  }
+
+  enterHangar(statusText) {
+    this.clearRunWorld();
+    this.runActive = false;
+    this.currentRunStats = null;
+    this.selectedCargoIndex = null;
+    this.selectedStashIndex = null;
+    this.cargoSlots = [];
+    this.pendingResources = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
+    this.extractStatus.textContent = 'Outside zone';
+    this.hud.zone.textContent = 'Dock';
+    this.hud.ftlTimer.classList.add('hidden');
+    this.manifestToggle.classList.add('hidden');
+    this.setCargoPanelOpen(false);
+    this.hud.frame.textContent = this.meta.activeShip.chassis.label;
+    this.hangar.status.textContent = statusText;
+    this.processBlueprintUnlocksFromStash();
+    this.hangar.overlay.classList.remove('hidden');
+    this.renderHangar();
+    this.refreshCargoUI();
+  }
+
+  renderHangar() {
+    const build = this.computeShipBuild();
+    const selectedItem = this.getSelectedStashItem();
+    const selectedSlot = this.selectedHangarSlot || SLOT_ORDER[0];
+    const slotItem = build.equipped[selectedSlot];
+    const repair = this.getRepairPreview(build);
+
+    this.hud.frame.textContent = build.chassisItem.label;
+    this.hangar.resources.scrap.textContent = this.meta.resources.scrap;
+    this.hangar.resources.tech.textContent = this.meta.resources.tech;
+    this.hangar.resources.biomass.textContent = this.meta.resources.biomass;
+    this.hangar.resources.credits.textContent = this.meta.resources.credits;
+    this.hangar.chassisName.textContent = build.chassisItem.label;
+    this.hangar.chassisTag.textContent = build.chassisItem.starter ? 'Replacement Hull' : 'Recovered Frame';
+    this.hangar.chassisDescription.textContent = build.chassisItem.description;
+    this.hangar.hullValue.textContent = `${Math.round((build.currentHull / build.maxHull) * 100)}%`;
+    this.hangar.hullBar.style.width = `${(build.currentHull / build.maxHull) * 100}%`;
+    this.hangar.powerValue.textContent = `${build.powerUse} / ${build.powerBudget}`;
+    this.hangar.speedValue.textContent = `${build.speed}`;
+    this.hangar.holdValue.textContent = `${build.safeStorageCapacity} safe / ${build.cargoCapacity}`;
+    this.hangar.scanValue.textContent = `${build.minimapRange}`;
+    this.hangar.stashCount.textContent = `${this.meta.stash.length} item${this.meta.stash.length === 1 ? '' : 's'}`;
+    this.hangar.blueprintCount.textContent = `${this.meta.unlockedComponentBlueprints.length + this.meta.unlockedChassisBlueprints.length} online`;
+    this.hangar.launchStatus.textContent = build.validPower
+      ? `Power stable. FTL spool ${build.extractionDuration}s.`
+      : `Grid overload: ${build.powerUse} / ${build.powerBudget}. Refit before launch.`;
+    this.hangar.launchButton.disabled = !build.validPower;
+    this.hangar.repairButton.disabled = repair.repairAmount <= 0;
+    this.hangar.repairButton.textContent =
+      repair.missingHull <= 0
+        ? 'Hull Stable'
+        : repair.repairAmount >= repair.missingHull
+          ? `Repair ${repair.repairAmount} Hull`
+          : repair.repairAmount > 0
+            ? `Patch ${repair.repairAmount} Hull`
+            : 'Repair Offline';
+
+    this.hangar.slotGrid.innerHTML = '';
+    for (const slot of SLOT_ORDER) {
+      const installed = build.equipped[slot];
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `ship-slot rarity-${installed?.rarityIndex ?? 0}`;
+      if (slot === selectedSlot) {
+        button.classList.add('selected');
+      }
+      if (this.isStashItemCompatibleWithSlot(selectedItem, slot)) {
+        button.classList.add('compatible');
+      }
+      button.innerHTML = `
+        <div class="slot-topline">
+          <span class="slot-meta">${SLOT_LABELS[slot]}</span>
+          <span class="rarity-chip">${installed ? RARITIES[installed.rarityIndex] : 'Empty'}</span>
+        </div>
+        <div class="slot-name">${installed?.label ?? 'No component installed'}</div>
+        <div class="slot-meta">${installed ? describeStats(installed.stats ?? {}) : 'Install a compatible system from stash.'}</div>
+      `;
+      button.addEventListener('click', () => {
+        this.selectedHangarSlot = slot;
+        this.renderHangar();
+      });
+      this.hangar.slotGrid.appendChild(button);
+    }
+
+    this.hangar.slotDetail.innerHTML = slotItem
+      ? `
+          <p class="eyebrow">${SLOT_LABELS[selectedSlot]}</p>
+          <h3 class="detail-title">${slotItem.label}</h3>
+          <div class="detail-meta">${RARITIES[slotItem.rarityIndex]} • Power ${slotItem.powerUse ?? 0} • Mod Slots ${slotItem.modSlots ?? 0}</div>
+          <p class="panel-copy">${slotItem.description}</p>
+          <p class="panel-copy">${describeStats(slotItem.stats ?? {}) || 'No modifiers.'}</p>
+          ${this.isStashItemCompatibleWithSlot(selectedItem, selectedSlot) ? '<div class="compatibility-note">Selected stash item can replace this system.</div>' : ''}
+        `
+      : `
+          <p class="eyebrow">${SLOT_LABELS[selectedSlot]}</p>
+          <h3 class="detail-title">Empty hardpoint</h3>
+          <p class="panel-copy">Install a compatible component from the hold cache to fill this slot.</p>
+        `;
+
+    this.hangar.stashDetail.innerHTML = selectedItem
+      ? `
+          <p class="eyebrow">${this.getItemCategoryLabel(selectedItem)}</p>
+          <h3 class="detail-title">${selectedItem.label}</h3>
+          <div class="detail-meta">${this.getInventoryItemStats(selectedItem) || 'Stored salvage'}</div>
+          <p class="panel-copy">${selectedItem.description ?? 'Recovered from the last sorties.'}</p>
+          ${selectedItem.category === 'component' ? `<div class="compatibility-note">Fits ${SLOT_LABELS[selectedItem.slotType]}.</div>` : ''}
+        `
+      : '<p class="panel-copy">Select stored salvage to install, inspect, or break down.</p>';
+
+    const installLabel = selectedItem?.category === 'component'
+      ? `Install to ${SLOT_LABELS[selectedItem.slotType]}`
+      : selectedItem?.category === 'chassis'
+        ? 'Activate Chassis'
+        : 'Install';
+    this.hangar.installButton.textContent = installLabel;
+    this.hangar.installButton.disabled = !this.isStashItemInstallable(selectedItem);
+    this.hangar.stashScrapButton.disabled = !selectedItem;
+
+    this.hangar.stashGrid.innerHTML = '';
+    if (this.meta.stash.length === 0) {
+      this.hangar.stashGrid.innerHTML = '<div class="empty-state">No stored salvage. Extract safe loot to fill the cache.</div>';
+    } else {
+      this.meta.stash.forEach((item, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `stash-card rarity-${item.rarityIndex ?? 1}`;
+        if (index === this.selectedStashIndex) {
+          button.classList.add('selected');
+        }
+        if (this.isStashItemCompatibleWithSlot(item, selectedSlot)) {
+          button.classList.add('compatible');
+        }
+        button.innerHTML = `
+          <div class="slot-topline">
+            <span class="category-tag rarity-${item.rarityIndex ?? 1}">${this.getItemCategoryLabel(item)}</span>
+            <span class="rarity-chip">${item.category === 'component' ? RARITIES[item.rarityIndex] : item.category === 'chassis' ? 'Frame' : 'Stored'}</span>
+          </div>
+          <div class="slot-name">${item.label}</div>
+          <div class="slot-meta">${this.getInventoryItemStats(item) || 'Recovered salvage'}</div>
+        `;
+        button.addEventListener('click', () => {
+          this.selectedStashIndex = index;
+          if (item.category === 'component') {
+            this.selectedHangarSlot = item.slotType;
+          }
+          this.renderHangar();
+        });
+        this.hangar.stashGrid.appendChild(button);
+      });
+    }
+
+    this.renderBlueprintList('component');
+    this.renderBlueprintList('chassis');
+  }
+
+  renderBlueprintList(type) {
+    const blueprintIds = type === 'component' ? this.meta.unlockedComponentBlueprints : this.meta.unlockedChassisBlueprints;
+    const list = type === 'component' ? this.hangar.componentBlueprintList : this.hangar.chassisBlueprintList;
+    list.innerHTML = '';
+
+    for (const blueprintId of blueprintIds) {
+      const source = type === 'component' ? COMPONENT_BLUEPRINTS[blueprintId] : CHASSIS_BLUEPRINTS[blueprintId];
+      const card = document.createElement('div');
+      card.className = 'blueprint-card';
+      const craftLabel = type === 'component' ? 'Forge' : 'Print';
+      const affordable = this.canAffordCost(source.cost);
+      card.innerHTML = `
+        <div class="blueprint-copy">
+          <div class="slot-topline">
+            <span class="category-tag">${type === 'component' ? SLOT_LABELS[source.slotType] : 'Chassis'}</span>
+            <span class="slot-meta">${type === 'component' ? 'Common Build' : 'Frame Fabrication'}</span>
+          </div>
+          <div class="slot-name">${source.name}</div>
+          <div class="slot-meta">${describeStats(source.stats)}${type === 'component' ? ` • Power ${source.powerUse ?? 0}` : ''}</div>
+          <div class="blueprint-cost">${formatCost(source.cost) || 'Free'}</div>
+        </div>
+      `;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'action-button';
+      button.textContent = craftLabel;
+      button.disabled = !affordable;
+      button.addEventListener('click', () => this.craftBlueprint(type, blueprintId));
+      card.appendChild(button);
+      list.appendChild(card);
+    }
+  }
+
+  craftBlueprint(type, blueprintId) {
+    const source = type === 'component' ? COMPONENT_BLUEPRINTS[blueprintId] : CHASSIS_BLUEPRINTS[blueprintId];
+    if (!this.spendResources(source.cost)) {
+      this.showMessage('Insufficient resources for fabrication.');
+      return;
+    }
+
+    const item = type === 'component'
+      ? createComponentItem(blueprintId, { rarityIndex: 1 })
+      : createChassisItem(blueprintId);
+    this.meta.stash.unshift(item);
+    this.sortStash();
+    this.selectedStashIndex = this.meta.stash.findIndex((entry) => entry.id === item.id);
+    this.showMessage(`Fabricated ${item.label}.`);
+    this.renderHangar();
+  }
+
+  installSelectedStashItem() {
+    const selectedItem = this.getSelectedStashItem();
+    if (!this.isStashItemInstallable(selectedItem)) {
+      return;
+    }
+
+    if (selectedItem.category === 'component') {
+      const slot = selectedItem.slotType;
+      const previous = this.meta.activeShip.equipped[slot];
+      this.meta.activeShip.equipped[slot] = selectedItem;
+      this.meta.stash.splice(this.selectedStashIndex, 1);
+      if (previous && !previous.starter) {
+        this.meta.stash.push(previous);
+      }
+      this.selectedHangarSlot = slot;
+      const updatedBuild = this.computeShipBuild();
+      this.meta.activeShip.currentHull = Math.min(this.meta.activeShip.currentHull, updatedBuild.maxHull);
+      this.showMessage(`${selectedItem.label} installed in ${SLOT_LABELS[slot]}.`);
+    } else if (selectedItem.category === 'chassis') {
+      const previousChassis = this.meta.activeShip.chassis;
+      this.meta.activeShip.chassis = selectedItem;
+      this.meta.stash.splice(this.selectedStashIndex, 1);
+      if (previousChassis && !previousChassis.starter) {
+        this.meta.stash.push(previousChassis);
+      }
+      const updatedBuild = this.computeShipBuild();
+      this.meta.activeShip.currentHull = updatedBuild.maxHull;
+      this.showMessage(`${selectedItem.label} moved into the active bay.`);
+    }
+
+    this.selectedStashIndex = null;
+    this.sortStash();
+    this.renderHangar();
+  }
+
+  scrapSelectedStashItem() {
+    const selectedItem = this.getSelectedStashItem();
+    if (!selectedItem) {
+      return;
+    }
+
+    const yields = selectedItem.category === 'resource'
+      ? { [selectedItem.resourceKey]: selectedItem.amount }
+      : this.getProcessingYield(selectedItem, this.getBaseProcessingMultiplier());
+    this.gainResources(yields);
+    this.showMessage(`Broke down ${selectedItem.label} into salvage stock.`);
+    this.meta.stash.splice(this.selectedStashIndex, 1);
+    this.selectedStashIndex = null;
+    this.renderHangar();
+  }
+
+  repairActiveShip() {
+    const build = this.computeShipBuild();
+    const repair = this.getRepairPreview(build);
+    if (repair.repairAmount <= 0) {
+      this.showMessage(repair.missingHull <= 0 ? 'Hull is already stable.' : 'Insufficient materials for repairs.');
+      return;
+    }
+
+    this.spendResources(repair.cost);
+    this.meta.activeShip.currentHull = Math.min(build.maxHull, this.meta.activeShip.currentHull + repair.repairAmount);
+    this.showMessage(`Patched ${repair.repairAmount} hull integrity.`);
+    this.renderHangar();
+  }
+
+  processBlueprintUnlocksFromStash() {
+    if (!this.meta.stash.length) {
+      return;
+    }
+
+    const remaining = [];
+    let unlockedCount = 0;
+    let duplicateCount = 0;
+
+    for (const item of this.meta.stash) {
+      if (item.category !== 'blueprint') {
+        remaining.push(item);
+        continue;
+      }
+
+      const collection = item.blueprintType === 'chassis'
+        ? this.meta.unlockedChassisBlueprints
+        : this.meta.unlockedComponentBlueprints;
+      if (!collection.includes(item.blueprintId)) {
+        collection.push(item.blueprintId);
+        unlockedCount += 1;
+      } else {
+        duplicateCount += 1;
+        this.gainResources(this.getProcessingYield(item, this.getBaseProcessingMultiplier()));
+      }
+    }
+
+    this.meta.stash = remaining;
+    this.sortStash();
+
+    if (unlockedCount > 0) {
+      this.showMessage(`Blueprint archive updated: ${unlockedCount} new pattern${unlockedCount === 1 ? '' : 's'} online.`);
+    }
+    if (duplicateCount > 0) {
+      this.showMessage(`Duplicate blueprint${duplicateCount === 1 ? '' : 's'} broken down for research stock.`);
+    }
   }
 
   generateExtractionZones() {
@@ -1301,61 +2193,54 @@ class Game {
     const seed = Math.floor(Math.random() * 1000 + index * 7);
     const roll = Math.random();
 
-    if (ship.kind === 'carrion' && roll < 0.45) {
-      return {
-        id: crypto.randomUUID(),
-        category: 'component',
-        label: `${createSeededChoice(['Shield', 'Engine', 'Scanner', 'Reactor', 'Hull'], seed)} Module`,
-        rarityIndex: Math.floor(lerp(1, 3.6, Math.random())),
-        safe: false,
-        combineKey: `component-${seed % 5}`
-      };
+    const componentIds = Object.keys(COMPONENT_BLUEPRINTS);
+    const chassisIds = Object.keys(CHASSIS_BLUEPRINTS).filter((id) => id !== 'starter_cutter');
+    const resourceKey = createSeededChoice(RESOURCE_KEYS, seed);
+    const componentId = createSeededChoice(componentIds, seed);
+
+    if (ship.kind === 'carrion' && roll < 0.14) {
+      return createBlueprintItem('chassis', createSeededChoice(chassisIds, seed));
     }
 
-    if (roll < 0.2) {
-      return {
-        id: crypto.randomUUID(),
-        category: 'blueprint',
-        label: `${createSeededChoice(['Reactor', 'Gunship Chassis', 'Cargo Bay', 'Shield Grid'], seed)} Blueprint`,
-        rarityIndex: 1,
-        safe: false,
-        combineKey: null
-      };
+    if (roll < 0.26) {
+      return createBlueprintItem('component', componentId);
     }
 
-    if (roll < 0.35) {
+    if (roll < 0.38) {
       return {
         id: crypto.randomUUID(),
         category: 'mod',
         label: createSeededChoice(['+1 Damage', '+30 RPM', '+5 Shield', '-1 Power Draw'], seed),
+        description: 'Prototype mod slug. Currently best used as salvage stock.',
         rarityIndex: Math.floor(lerp(1, 4.2, Math.random())),
-        safe: false,
         combineKey: null
       };
     }
 
-    if (roll < 0.72) {
-      const resourceKey = createSeededChoice(RESOURCE_KEYS, seed);
+    if (roll < 0.68) {
       return {
         id: crypto.randomUUID(),
         category: 'resource',
         resourceKey,
         amount: 8 + Math.floor(Math.random() * 18 * ship.richness),
-        label: `${resourceKey[0].toUpperCase()}${resourceKey.slice(1)} Bundle`,
+        label: `${RESOURCE_LABELS[resourceKey]} Bundle`,
         rarityIndex: 0,
-        safe: false,
         combineKey: null
       };
     }
 
-    return {
-      id: crypto.randomUUID(),
-      category: 'component',
-      label: `${createSeededChoice(['Laser Coupler', 'Missile Rack', 'Flux Engine', 'Rim Shield'], seed)} ${reason === 'demon' ? 'Relic' : 'Part'}`,
-      rarityIndex: Math.floor(lerp(0, 4, Math.random())),
-      safe: false,
-      combineKey: `component-${seed % 4}`
-    };
+    if (roll < 0.95) {
+      const rarityFloor = ship.kind === 'carrion' ? 1 : 0;
+      const rarityCeiling = ship.kind === 'carrion' ? 3 : 2;
+      const rarityIndex = clamp(
+        Math.floor(lerp(rarityFloor, rarityCeiling + 0.999, Math.random() * clamp(ship.richness, 0.9, 1.9))),
+        rarityFloor,
+        RARITIES.length - 1
+      );
+      return createComponentItem(componentId, { rarityIndex });
+    }
+
+    return createChassisItem(createSeededChoice(chassisIds, seed), { starter: false });
   }
 
   spawnPickup(position, item) {
@@ -1363,7 +2248,8 @@ class Game {
       component: RARITY_COLORS[item.rarityIndex],
       resource: 0x8fffb6,
       blueprint: 0x7fffe3,
-      mod: 0xffd36f
+      mod: 0xffd36f,
+      chassis: 0xffa978
     }[item.category];
 
     const mesh = new THREE.Mesh(
@@ -1398,7 +2284,7 @@ class Game {
   }
 
   getSafeSlotCount() {
-    return this.cargoSlots.slice(0, CONFIG.safeStorageCapacity).filter(Boolean).length;
+    return this.cargoSlots.slice(0, this.getSafeStorageCapacity()).filter(Boolean).length;
   }
 
   getFirstEmptyCargoIndex() {
@@ -1419,7 +2305,8 @@ class Game {
     return {
       component: 'SYS',
       blueprint: 'BP',
-      mod: 'MOD'
+      mod: 'MOD',
+      chassis: 'CHS'
     }[item.category] ?? 'UNK';
   }
 
@@ -1460,11 +2347,15 @@ class Game {
     }
 
     if (this.canCombineCargoItems(selectedItem, targetItem)) {
-      const upgradedItem = {
-        ...targetItem,
-        id: crypto.randomUUID(),
-        rarityIndex: targetItem.rarityIndex + 1
-      };
+      const upgradedItem = targetItem.category === 'component' && targetItem.blueprintId
+        ? createComponentItem(targetItem.blueprintId, {
+            rarityIndex: targetItem.rarityIndex + 1
+          })
+        : {
+            ...targetItem,
+            id: crypto.randomUUID(),
+            rarityIndex: targetItem.rarityIndex + 1
+          };
       this.cargoSlots[selectedIndex] = null;
       this.cargoSlots[index] = upgradedItem;
       this.selectedCargoIndex = null;
@@ -1487,7 +2378,7 @@ class Game {
 
     const yields = item.category === 'resource'
       ? { [item.resourceKey]: item.amount }
-      : this.getProcessingYield(item);
+      : this.getProcessingYield(item, this.getCurrentProcessingMultiplier());
 
     for (const key of RESOURCE_KEYS) {
       this.pendingResources[key] += yields[key] ?? 0;
@@ -1758,6 +2649,7 @@ class Game {
   }
 
   updateExtraction(dt) {
+    const extractionDuration = this.getCurrentExtractionDuration();
     const previousZone = this.currentExtractionZone;
     this.currentExtractionZone = this.extractionZones.find(
       (zone) => distanceXZ(zone.position, this.player.getWorldPosition()) < zone.radius
@@ -1768,13 +2660,13 @@ class Game {
         this.selectedCargoIndex = null;
         this.setCargoPanelOpen(false);
       }
-      this.extractionTimer = clamp(this.extractionTimer + dt, 0, CONFIG.extractionDuration);
-      this.extractStatus.textContent = `Charging ${this.extractionTimer.toFixed(1)} / ${CONFIG.extractionDuration}s`;
+      this.extractionTimer = clamp(this.extractionTimer + dt, 0, extractionDuration);
+      this.extractStatus.textContent = `Charging ${this.extractionTimer.toFixed(1)} / ${extractionDuration}s`;
       this.hud.zone.textContent = 'Jump';
       this.hud.ftlTimer.classList.remove('hidden');
-      this.hud.ftlTimer.textContent = `${Math.max(0, CONFIG.extractionDuration - this.extractionTimer).toFixed(0)}s`;
+      this.hud.ftlTimer.textContent = `${Math.max(0, extractionDuration - this.extractionTimer).toFixed(0)}s`;
       this.manifestToggle.classList.remove('hidden');
-      if (this.extractionTimer >= CONFIG.extractionDuration) {
+      if (this.extractionTimer >= extractionDuration) {
         this.completeExtraction();
       }
     } else {
@@ -1791,12 +2683,11 @@ class Game {
   }
 
   completeExtraction() {
-    const extractedItems = this.cargoSlots.slice(0, CONFIG.safeStorageCapacity).filter(Boolean);
-    const jettisoned = this.cargoSlots.slice(CONFIG.safeStorageCapacity).filter(Boolean);
+    const safeStorageCapacity = this.getSafeStorageCapacity();
+    const extractedItems = this.cargoSlots.slice(0, safeStorageCapacity).filter(Boolean);
+    const jettisoned = this.cargoSlots.slice(safeStorageCapacity).filter(Boolean);
 
-    for (const key of RESOURCE_KEYS) {
-      this.meta.resources[key] += this.pendingResources[key];
-    }
+    this.gainResources(this.pendingResources);
 
     for (const item of extractedItems) {
       if (item.category === 'resource') {
@@ -1805,6 +2696,8 @@ class Game {
         this.meta.stash.push(item);
       }
     }
+    this.sortStash();
+    this.meta.activeShip.currentHull = Math.max(1, Math.round(this.player?.hull ?? this.meta.activeShip.currentHull));
 
     this.endRun(
       true,
@@ -1818,39 +2711,47 @@ class Game {
     }
 
     this.runActive = false;
-    this.runOutcome.textContent = success ? 'Extraction Complete' : 'Hard Wipe';
-    this.runTitle.textContent = success ? 'Jump Successful' : 'Ship Lost';
-    this.runSummary.textContent = `${summaryText} Meta stash now holds ${this.meta.stash.length} items.`;
-    this.runOverlay.classList.remove('hidden');
     this.setCargoPanelOpen(false);
+    if (!success) {
+      this.meta.activeShip = this.createReplacementShipState();
+    }
+    const stashSize = this.meta.stash.length;
+    this.enterHangar(`${summaryText} Stash cache now holds ${stashSize} item${stashSize === 1 ? '' : 's'}.`);
   }
 
-  getProcessingYield(item) {
+  getProcessingYield(item, multiplier = 1) {
     const rarityFactor = 1 + item.rarityIndex * 0.7;
     if (item.category === 'component') {
+      const source = COMPONENT_BLUEPRINTS[item.blueprintId];
+      if (source) {
+        return scaleCost(source.cost, (0.55 + item.rarityIndex * 0.28) * multiplier);
+      }
       return {
-        scrap: Math.round(8 * rarityFactor),
-        tech: Math.round(3 * rarityFactor),
+        scrap: Math.round(8 * rarityFactor * multiplier),
+        tech: Math.round(3 * rarityFactor * multiplier),
         biomass: 0,
-        credits: Math.round(2 * rarityFactor)
+        credits: Math.round(2 * rarityFactor * multiplier)
       };
     }
 
+    if (item.category === 'chassis') {
+      const source = CHASSIS_BLUEPRINTS[item.blueprintId];
+      return scaleCost(source.cost, 0.68 * multiplier);
+    }
+
     if (item.category === 'blueprint') {
-      return {
-        scrap: 4,
-        tech: 10,
-        biomass: 0,
-        credits: 14
-      };
+      const source = item.blueprintType === 'chassis'
+        ? CHASSIS_BLUEPRINTS[item.blueprintId]
+        : COMPONENT_BLUEPRINTS[item.blueprintId];
+      return scaleCost(source.cost, 0.46 * multiplier);
     }
 
     if (item.category === 'mod') {
       return {
-        scrap: 6,
-        tech: 4 + item.rarityIndex * 3,
+        scrap: Math.round(6 * multiplier),
+        tech: Math.round((4 + item.rarityIndex * 3) * multiplier),
         biomass: 0,
-        credits: 3 + item.rarityIndex * 2
+        credits: Math.round((3 + item.rarityIndex * 2) * multiplier)
       };
     }
 
@@ -1860,8 +2761,10 @@ class Game {
   refreshCargoUI() {
     const filledCount = this.getFilledCargoCount();
     const safeCount = this.getSafeSlotCount();
-    this.hud.cargo.textContent = `${filledCount} / ${CONFIG.cargoCapacity}`;
-    this.hud.safe.textContent = `${safeCount} / ${CONFIG.safeStorageCapacity}`;
+    const cargoCapacity = this.getCurrentCargoCapacity();
+    const safeStorageCapacity = this.getSafeStorageCapacity();
+    this.hud.cargo.textContent = `${filledCount} / ${cargoCapacity}`;
+    this.hud.safe.textContent = `${safeCount} / ${safeStorageCapacity}`;
     this.manifestLabel.textContent = this.isCargoPanelOpen ? 'Hide Hold' : 'Manifest';
     this.hud.scrap.textContent = `${this.meta.resources.scrap + this.pendingResources.scrap}`;
     this.hud.tech.textContent = `${this.meta.resources.tech + this.pendingResources.tech}`;
@@ -1874,7 +2777,7 @@ class Game {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'cargo-slot';
-      if (index < CONFIG.safeStorageCapacity) {
+      if (index < safeStorageCapacity) {
         button.classList.add('safe-slot');
       }
       if (index === this.selectedCargoIndex) {
@@ -1892,7 +2795,7 @@ class Game {
           <div class="slot-label">${item.label}</div>
           <div class="slot-meta">
             <span>${metaValue}</span>
-            <span class="slot-safe-tag">${index < CONFIG.safeStorageCapacity ? 'SAFE' : 'HOLD'}</span>
+            <span class="slot-safe-tag">${index < safeStorageCapacity ? 'SAFE' : 'HOLD'}</span>
           </div>
         `;
 
@@ -1938,10 +2841,10 @@ class Game {
         button.classList.add('empty');
         button.innerHTML = `
           <div class="slot-header">
-            <span class="slot-index">${index < CONFIG.safeStorageCapacity ? 'Safe' : 'Hold'}</span>
-            <span class="slot-icon">${index < CONFIG.safeStorageCapacity ? 'FTL' : '--'}</span>
+            <span class="slot-index">${index < safeStorageCapacity ? 'Safe' : 'Hold'}</span>
+            <span class="slot-icon">${index < safeStorageCapacity ? 'FTL' : '--'}</span>
           </div>
-          <div class="slot-label">${index < CONFIG.safeStorageCapacity ? 'Reserved jump storage' : 'Empty cargo cell'}</div>
+          <div class="slot-label">${index < safeStorageCapacity ? 'Reserved jump storage' : 'Empty cargo cell'}</div>
           <div class="slot-meta">
             <span>Cell ${String(index + 1).padStart(2, '0')}</span>
           </div>
@@ -1954,8 +2857,13 @@ class Game {
   }
 
   refreshHUD() {
+    if (!this.player) {
+      return;
+    }
+
     const hullPercent = Math.round((this.player.hull / this.player.maxHull) * 100);
     const shieldPercent = Math.round((this.player.shield / Math.max(1, this.player.maxShield)) * 100);
+    this.hud.frame.textContent = this.player.displayLabel ?? this.computeShipBuild().chassisItem.label;
     this.hud.hull.textContent = `${hullPercent}%`;
     this.hud.shield.textContent = `${shieldPercent}%`;
     this.hud.hullBar.style.width = `${hullPercent}%`;
@@ -1976,7 +2884,7 @@ class Game {
     const centerX = width / 2;
     const centerY = height / 2;
     const radarRadius = Math.min(width, height) * 0.5 - 8;
-    const range = CONFIG.minimapRange;
+    const range = this.getCurrentMinimapRange();
     const playerPosition = this.player.getWorldPosition();
     const forward = this.player.aimDirection.lengthSq() > 0.01
       ? new THREE.Vector2(this.player.aimDirection.x, this.player.aimDirection.z).normalize()

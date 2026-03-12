@@ -569,7 +569,7 @@ canvas {
   flex-direction: column;
   gap: 5px;
   width: min(166px, 42vw);
-  z-index: 5;
+  z-index: 12;
   pointer-events: none;
 }
 
@@ -667,31 +667,10 @@ canvas {
   text-transform: uppercase;
 }
 
-.run-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(0, 0, 0, 0.58);
-  z-index: 10;
-}
-
-.run-card {
-  position: relative;
-  width: min(380px, calc(100vw - 24px));
-  padding: 18px;
-}
-
-.run-card h2 {
-  margin: 6px 0 10px;
-  font-size: clamp(1.35rem, 5vw, 1.9rem);
-  letter-spacing: 0.08em;
-}
-
 .action-button {
   width: 100%;
   min-height: 48px;
-  margin-top: 16px;
+  padding: 0 16px;
   appearance: none;
   clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
   border: 1px solid rgba(126, 177, 191, 0.24);
@@ -699,6 +678,376 @@ canvas {
     linear-gradient(180deg, rgba(31, 36, 45, 0.96), rgba(13, 16, 21, 0.96));
   color: var(--text);
   font: inherit;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.action-primary {
+  border-color: rgba(153, 206, 129, 0.24);
+  background:
+    linear-gradient(180deg, rgba(31, 44, 39, 0.96), rgba(12, 18, 16, 0.96));
+}
+
+.action-button:disabled {
+  opacity: 0.42;
+}
+
+.resource-rack {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.hangar-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  overflow-y: auto;
+  padding:
+    calc(max(12px, env(safe-area-inset-top)) + 2px)
+    max(12px, env(safe-area-inset-right))
+    calc(max(24px, env(safe-area-inset-bottom)) + 12px)
+    max(12px, env(safe-area-inset-left));
+  background:
+    radial-gradient(circle at top, rgba(215, 101, 89, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(3, 5, 8, 0.92), rgba(4, 6, 9, 0.96));
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+
+.hangar-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.hangar-module {
+  position: relative;
+  clip-path: var(--cut);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(14, 17, 24, 0.94), rgba(8, 10, 14, 0.94));
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.hangar-module::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  clip-path: var(--cut);
+  border: 1px solid rgba(255, 240, 212, 0.04);
+  pointer-events: none;
+}
+
+.hangar-command {
+  display: grid;
+  gap: 12px;
+}
+
+.hangar-command-top,
+.panel-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 10px;
+}
+
+.hangar-title,
+.panel-title {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: clamp(1.2rem, 4.4vw, 2rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hangar-copy {
+  max-width: 44ch;
+  font-size: 0.78rem;
+}
+
+.status-chip,
+.launch-readout,
+.detail-console,
+.ship-stat,
+.blueprint-card,
+.stash-card,
+.ship-slot {
+  position: relative;
+  clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  border: 1px solid rgba(255, 240, 212, 0.08);
+  background: rgba(255, 240, 212, 0.03);
+}
+
+.status-chip {
+  min-width: 132px;
+  min-height: 56px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.status-value,
+.launch-value,
+.ship-stat-value {
+  color: var(--text);
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+}
+
+.hangar-resources {
+  gap: 8px;
+}
+
+.launch-strip {
+  display: grid;
+  gap: 10px;
+}
+
+.launch-readout {
+  min-height: 54px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.drydock-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.hangar-meter {
+  margin-top: 4px;
+}
+
+.ship-stat-rack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ship-stat {
+  min-height: 56px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+}
+
+.ship-slot-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ship-slot {
+  min-height: 70px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  appearance: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.ship-slot.selected {
+  border-color: rgba(126, 177, 191, 0.36);
+  background: rgba(126, 177, 191, 0.08);
+}
+
+.ship-slot.compatible {
+  border-color: rgba(153, 206, 129, 0.28);
+}
+
+.ship-slot .slot-topline,
+.stash-card .slot-topline,
+.blueprint-card .slot-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+}
+
+.ship-slot .slot-name,
+.stash-card .slot-name,
+.blueprint-card .slot-name {
+  color: var(--text);
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+.ship-slot .slot-meta,
+.stash-card .slot-meta,
+.blueprint-card .slot-meta {
+  color: var(--text-dim);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.detail-console {
+  min-height: 108px;
+  margin-top: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.detail-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.94rem;
+  letter-spacing: 0.06em;
+}
+
+.detail-meta {
+  color: var(--text-dim);
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel-actions {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.dual-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stash-grid,
+.blueprint-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  max-height: min(34vh, 360px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.stash-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stash-card,
+.blueprint-card {
+  min-height: 90px;
+  padding: 9px 10px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  appearance: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.stash-card.selected {
+  border-color: rgba(126, 177, 191, 0.36);
+  background: rgba(126, 177, 191, 0.08);
+}
+
+.stash-card.compatible {
+  border-color: rgba(153, 206, 129, 0.28);
+}
+
+.blueprint-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.blueprint-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.blueprint-cost {
+  color: var(--text-dim);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.blueprint-card .action-button {
+  width: auto;
+  min-width: 96px;
+  margin: 0;
+}
+
+.fabricator-group + .fabricator-group {
+  margin-top: 12px;
+}
+
+.empty-state {
+  min-height: 86px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  border: 1px dashed rgba(255, 240, 212, 0.08);
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.rarity-chip {
+  min-width: 44px;
+  padding: 4px 6px;
+  text-align: center;
+  clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  border: 1px solid rgba(255, 240, 212, 0.08);
+  color: var(--text);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rarity-0 .rarity-chip,
+.category-tag.rarity-0 {
+  border-color: rgba(102, 113, 135, 0.28);
+}
+
+.rarity-1 .rarity-chip,
+.category-tag.rarity-1 {
+  border-color: rgba(143, 196, 255, 0.28);
+}
+
+.rarity-2 .rarity-chip,
+.category-tag.rarity-2 {
+  border-color: rgba(126, 124, 255, 0.28);
+}
+
+.rarity-3 .rarity-chip,
+.category-tag.rarity-3 {
+  border-color: rgba(214, 96, 255, 0.28);
+}
+
+.rarity-4 .rarity-chip,
+.category-tag.rarity-4 {
+  border-color: rgba(255, 189, 89, 0.32);
+}
+
+.category-tag {
+  min-width: 58px;
+  padding: 4px 6px;
+  text-align: center;
+  clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  border: 1px solid rgba(255, 240, 212, 0.08);
+  color: var(--text-faint);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.compatibility-note {
+  color: var(--safe);
+  font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -725,5 +1074,59 @@ canvas {
 
   #cargo-panel {
     width: 384px;
+  }
+
+  .hangar-shell {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .hangar-command {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    align-items: center;
+  }
+
+  .drydock-panel {
+    grid-row: span 2;
+  }
+
+  .stash-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .hangar-overlay {
+    padding-inline: 10px;
+  }
+
+  .hangar-module {
+    padding: 12px;
+  }
+
+  .status-chip {
+    min-width: 108px;
+  }
+
+  .resource-rack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stash-grid,
+  .ship-slot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dual-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-card {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-card .action-button {
+    width: 100%;
   }
 }
