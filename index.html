@@ -119,139 +119,170 @@
       </div>
 
       <section id="hangar-overlay" class="hangar-overlay">
-        <div class="hangar-shell">
-          <section class="hangar-module hangar-command">
-            <div class="hangar-command-top">
+        <div class="hangar-frame">
+          <section class="hangar-command">
+            <div class="hangar-brand">
               <div>
                 <p class="eyebrow">Dry Dock 13</p>
                 <h1 class="hangar-title">Stellar Carrion</h1>
               </div>
-              <div class="status-chip">
+              <div class="status-chip command-status">
                 <span class="eyebrow">Status</span>
                 <span id="hangar-status" class="status-value">Docked and awaiting launch.</span>
               </div>
             </div>
-            <p class="panel-copy hangar-copy">
-              Rebuild the rig, refit the frame, and decide what survives the next jump.
-            </p>
-            <div class="resource-rack hangar-resources">
-              <div class="resource-cell resource-scrap">
-                <span class="resource-key">Scrap</span>
-                <span id="hangar-scrap" class="resource-value">0</span>
+            <div class="hangar-command-main">
+              <div class="command-ship">
+                <p class="eyebrow">Active Frame</p>
+                <div id="hangar-brief-name" class="command-ship-name">Starter Cutter</div>
+                <p class="panel-copy hangar-copy">
+                  Rebuild the rig, refit the frame, and decide what survives the next jump.
+                </p>
               </div>
-              <div class="resource-cell resource-tech">
-                <span class="resource-key">Tech</span>
-                <span id="hangar-tech" class="resource-value">0</span>
-              </div>
-              <div class="resource-cell resource-biomass">
-                <span class="resource-key">Biomass</span>
-                <span id="hangar-biomass" class="resource-value">0</span>
-              </div>
-              <div class="resource-cell resource-credits">
-                <span class="resource-key">Credits</span>
-                <span id="hangar-credits" class="resource-value">0</span>
-              </div>
-            </div>
-            <div class="launch-strip">
-              <div class="launch-readout">
-                <span class="eyebrow">Launch Window</span>
-                <span id="launch-status" class="launch-value">Ready to deploy.</span>
-              </div>
-              <button id="launch-button" class="action-button action-primary">
-                Deploy Run
-              </button>
-            </div>
-          </section>
-
-          <section class="hangar-module drydock-panel">
-            <div class="panel-banner">
-              <div>
-                <p class="eyebrow">Active Ship</p>
-                <h2 id="hangar-chassis-name" class="panel-title">Starter Cutter</h2>
-              </div>
-              <div class="status-chip">
-                <span class="eyebrow">Frame</span>
-                <span id="hangar-chassis-tag" class="status-value">Replacement Hull</span>
-              </div>
-            </div>
-            <p id="hangar-chassis-description" class="panel-copy"></p>
-            <div class="drydock-summary">
-              <div class="meter meter-hull hangar-meter">
-                <div class="meter-head">
-                  <span class="meter-label">Hull Integrity</span>
-                  <span id="hangar-hull-value" class="meter-value">100%</span>
+              <div class="launch-cluster">
+                <div class="launch-readout">
+                  <span class="eyebrow">Launch Window</span>
+                  <span id="launch-status" class="launch-value">Ready to deploy.</span>
                 </div>
-                <div class="meter-track">
-                  <div id="hangar-hull-bar" class="meter-fill hull-fill"></div>
-                </div>
+                <button id="launch-button" class="action-button action-primary">
+                  Deploy Run
+                </button>
               </div>
-              <div class="ship-stat-rack">
-                <div class="ship-stat">
+            </div>
+            <div class="command-strip">
+              <div class="command-stats">
+                <div class="command-stat">
+                  <span class="eyebrow">Hull</span>
+                  <span id="command-hull-value" class="command-value">100%</span>
+                </div>
+                <div class="command-stat">
                   <span class="eyebrow">Power</span>
-                  <span id="hangar-power-value" class="ship-stat-value">0 / 0</span>
+                  <span id="hangar-power-value" class="command-value">0 / 0</span>
                 </div>
-                <div class="ship-stat">
-                  <span class="eyebrow">Vector</span>
-                  <span id="hangar-speed-value" class="ship-stat-value">0</span>
-                </div>
-                <div class="ship-stat">
+                <div class="command-stat">
                   <span class="eyebrow">Hold</span>
-                  <span id="hangar-hold-value" class="ship-stat-value">0 / 0</span>
+                  <span id="hangar-hold-value" class="command-value">0 / 0</span>
                 </div>
-                <div class="ship-stat">
+                <div class="command-stat">
                   <span class="eyebrow">Scan</span>
-                  <span id="hangar-scan-value" class="ship-stat-value">0</span>
+                  <span id="hangar-scan-value" class="command-value">0</span>
+                </div>
+              </div>
+              <div class="resource-rack hangar-resources">
+                <div class="resource-cell resource-scrap">
+                  <span class="resource-key">Scrap</span>
+                  <span id="hangar-scrap" class="resource-value">0</span>
+                </div>
+                <div class="resource-cell resource-tech">
+                  <span class="resource-key">Tech</span>
+                  <span id="hangar-tech" class="resource-value">0</span>
+                </div>
+                <div class="resource-cell resource-biomass">
+                  <span class="resource-key">Biomass</span>
+                  <span id="hangar-biomass" class="resource-value">0</span>
+                </div>
+                <div class="resource-cell resource-credits">
+                  <span class="resource-key">Credits</span>
+                  <span id="hangar-credits" class="resource-value">0</span>
                 </div>
               </div>
             </div>
-            <div id="ship-slot-grid" class="ship-slot-grid"></div>
-            <div id="slot-detail" class="detail-console"></div>
-            <div class="panel-actions">
-              <button id="repair-button" class="action-button">Repair Hull</button>
-            </div>
           </section>
 
-          <section class="hangar-module stash-panel">
-            <div class="panel-banner">
-              <div>
-                <p class="eyebrow">Recovered Stash</p>
-                <h2 class="panel-title">Hold Cache</h2>
-              </div>
-              <div class="status-chip">
-                <span class="eyebrow">Stored</span>
-                <span id="stash-count" class="status-value">0 items</span>
-              </div>
-            </div>
-            <div id="stash-detail" class="detail-console">
-              <p class="panel-copy">Select stored salvage to install, inspect, or break down.</p>
-            </div>
-            <div class="panel-actions dual-actions">
-              <button id="install-button" class="action-button action-primary">Install</button>
-              <button id="stash-scrap-button" class="action-button">Break Down</button>
-            </div>
-            <div id="stash-grid" class="stash-grid"></div>
-          </section>
+          <nav class="hangar-tabbar" aria-label="Hangar views">
+            <button id="hangar-tab-bay" class="hangar-tab active" data-hangar-tab="bay" type="button">
+              <span class="hangar-tab-label">Rig</span>
+              <span id="hangar-tab-bay-meta" class="hangar-tab-meta">Ready</span>
+            </button>
+            <button id="hangar-tab-cache" class="hangar-tab" data-hangar-tab="cache" type="button">
+              <span class="hangar-tab-label">Cache</span>
+              <span id="hangar-tab-cache-meta" class="hangar-tab-meta">0 stored</span>
+            </button>
+            <button id="hangar-tab-forge" class="hangar-tab" data-hangar-tab="forge" type="button">
+              <span class="hangar-tab-label">Forge</span>
+              <span id="hangar-tab-forge-meta" class="hangar-tab-meta">0 online</span>
+            </button>
+          </nav>
 
-          <section class="hangar-module fabricator-panel">
-            <div class="panel-banner">
-              <div>
-                <p class="eyebrow">Fabricator</p>
-                <h2 class="panel-title">Blueprint Foundry</h2>
+          <div class="hangar-panels">
+            <section id="hangar-panel-bay" class="hangar-panel active" data-hangar-panel="bay">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Rig Bay</p>
+                  <h2 id="hangar-chassis-name" class="panel-title">Starter Cutter</h2>
+                </div>
+                <div class="status-chip compact-chip">
+                  <span class="eyebrow">Frame</span>
+                  <span id="hangar-chassis-tag" class="status-value">Replacement Hull</span>
+                </div>
               </div>
-              <div class="status-chip">
-                <span class="eyebrow">Patterns</span>
-                <span id="blueprint-count" class="status-value">0 online</span>
+              <p id="hangar-chassis-description" class="panel-copy"></p>
+              <div class="bay-summary">
+                <div class="meter meter-hull hangar-meter">
+                  <div class="meter-head">
+                    <span class="meter-label">Hull Integrity</span>
+                    <span id="hangar-hull-value" class="meter-value">100%</span>
+                  </div>
+                  <div class="meter-track">
+                    <div id="hangar-hull-bar" class="meter-fill hull-fill"></div>
+                  </div>
+                </div>
+                <div class="command-stat command-stat-large">
+                  <span class="eyebrow">Vector</span>
+                  <span id="hangar-speed-value" class="command-value">0</span>
+                </div>
               </div>
-            </div>
-            <div class="fabricator-group">
-              <p class="eyebrow">Components</p>
-              <div id="component-blueprint-list" class="blueprint-list"></div>
-            </div>
-            <div class="fabricator-group">
-              <p class="eyebrow">Chassis</p>
-              <div id="chassis-blueprint-list" class="blueprint-list"></div>
-            </div>
-          </section>
+              <div class="panel-actions panel-actions-inline">
+                <button id="repair-button" class="action-button">Repair Hull</button>
+              </div>
+              <div id="ship-slot-grid" class="ship-slot-grid"></div>
+              <div id="slot-detail" class="detail-console"></div>
+            </section>
+
+            <section id="hangar-panel-cache" class="hangar-panel" data-hangar-panel="cache">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Recovered Stash</p>
+                  <h2 class="panel-title">Hold Cache</h2>
+                </div>
+                <div class="status-chip compact-chip">
+                  <span class="eyebrow">Stored</span>
+                  <span id="stash-count" class="status-value">0 items</span>
+                </div>
+              </div>
+              <div class="panel-actions dual-actions">
+                <button id="install-button" class="action-button action-primary">Install</button>
+                <button id="stash-scrap-button" class="action-button">Break Down</button>
+              </div>
+              <div id="stash-detail" class="detail-console">
+                <p class="panel-copy">Select stored salvage to install, inspect, or break down.</p>
+              </div>
+              <div id="stash-grid" class="stash-grid"></div>
+            </section>
+
+            <section id="hangar-panel-forge" class="hangar-panel" data-hangar-panel="forge">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Fabricator</p>
+                  <h2 class="panel-title">Blueprint Foundry</h2>
+                </div>
+                <div class="status-chip compact-chip">
+                  <span class="eyebrow">Patterns</span>
+                  <span id="blueprint-count" class="status-value">0 online</span>
+                </div>
+              </div>
+              <div class="forge-columns">
+                <div class="fabricator-group">
+                  <p class="eyebrow">Components</p>
+                  <div id="component-blueprint-list" class="blueprint-list"></div>
+                </div>
+                <div class="fabricator-group">
+                  <p class="eyebrow">Chassis</p>
+                  <div id="chassis-blueprint-list" class="blueprint-list"></div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </section>
     </div>

@@ -702,12 +702,12 @@ canvas {
   position: absolute;
   inset: 0;
   z-index: 11;
-  overflow-y: auto;
+  overflow: hidden;
   padding:
-    calc(max(12px, env(safe-area-inset-top)) + 2px)
-    max(12px, env(safe-area-inset-right))
-    calc(max(24px, env(safe-area-inset-bottom)) + 12px)
-    max(12px, env(safe-area-inset-left));
+    calc(max(10px, env(safe-area-inset-top)) + 2px)
+    max(10px, env(safe-area-inset-right))
+    calc(max(14px, env(safe-area-inset-bottom)) + 8px)
+    max(10px, env(safe-area-inset-left));
   background:
     radial-gradient(circle at top, rgba(215, 101, 89, 0.1), transparent 28%),
     linear-gradient(180deg, rgba(3, 5, 8, 0.92), rgba(4, 6, 9, 0.96));
@@ -715,24 +715,28 @@ canvas {
   pointer-events: auto;
 }
 
-.hangar-shell {
-  width: min(1120px, 100%);
+.hangar-frame {
+  width: min(960px, 100%);
+  height: 100%;
   margin: 0 auto;
   display: grid;
-  gap: 12px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
 }
 
-.hangar-module {
+.hangar-command,
+.hangar-panel {
   position: relative;
   clip-path: var(--cut);
   border: 1px solid var(--line);
   background:
     linear-gradient(180deg, rgba(14, 17, 24, 0.94), rgba(8, 10, 14, 0.94));
   box-shadow: var(--shadow);
-  padding: 14px;
+  backdrop-filter: blur(10px);
 }
 
-.hangar-module::before {
+.hangar-command::before,
+.hangar-panel::before {
   content: "";
   position: absolute;
   inset: 1px;
@@ -743,38 +747,47 @@ canvas {
 
 .hangar-command {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  padding: 12px;
 }
 
-.hangar-command-top,
-.panel-banner {
+.hangar-brand,
+.panel-head {
   display: flex;
   justify-content: space-between;
   align-items: start;
   gap: 10px;
 }
 
-.hangar-title,
-.panel-title {
+.hangar-title {
   margin: 4px 0 0;
   color: var(--text);
-  font-size: clamp(1.2rem, 4.4vw, 2rem);
+  font-size: clamp(1.06rem, 4vw, 1.8rem);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
+.panel-title {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: clamp(1rem, 3.8vw, 1.45rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .hangar-copy {
-  max-width: 44ch;
-  font-size: 0.78rem;
+  max-width: 34ch;
+  font-size: 0.72rem;
 }
 
 .status-chip,
 .launch-readout,
 .detail-console,
-.ship-stat,
 .blueprint-card,
 .stash-card,
-.ship-slot {
+.ship-slot,
+.command-stat,
+.hangar-tab {
   position: relative;
   clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
   border: 1px solid rgba(255, 240, 212, 0.08);
@@ -782,8 +795,8 @@ canvas {
 }
 
 .status-chip {
-  min-width: 132px;
-  min-height: 56px;
+  min-width: 116px;
+  min-height: 50px;
   padding: 8px 10px;
   display: grid;
   gap: 4px;
@@ -791,53 +804,144 @@ canvas {
 
 .status-value,
 .launch-value,
-.ship-stat-value {
+.command-value {
   color: var(--text);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   letter-spacing: 0.06em;
 }
 
-.hangar-resources {
+.command-status {
+  max-width: min(46vw, 220px);
+}
+
+.compact-chip {
+  min-width: 104px;
+  min-height: 46px;
+}
+
+.hangar-command-main {
+  display: grid;
+  gap: 4px;
+}
+
+.command-ship {
+  display: grid;
+  gap: 4px;
+}
+
+.command-ship-name {
+  color: var(--text);
+  font-size: clamp(0.96rem, 4vw, 1.35rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.launch-cluster {
+  display: grid;
   gap: 8px;
 }
 
-.launch-strip {
-  display: grid;
-  gap: 10px;
-}
-
 .launch-readout {
-  min-height: 54px;
+  min-height: 50px;
   padding: 8px 10px;
   display: grid;
   gap: 4px;
 }
 
-.drydock-summary {
+.command-strip {
   display: grid;
   gap: 10px;
 }
 
-.hangar-meter {
-  margin-top: 4px;
-}
-
-.ship-stat-rack {
+.command-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
-.ship-stat {
-  min-height: 56px;
+.command-stat {
+  min-height: 50px;
   padding: 8px 10px;
   display: grid;
   gap: 4px;
   align-content: center;
 }
 
+.command-stat-large {
+  min-height: 64px;
+}
+
+.hangar-resources {
+  gap: 8px;
+}
+
+.hangar-tabbar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hangar-tab {
+  min-height: 54px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  appearance: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.hangar-tab.active {
+  border-color: rgba(153, 206, 129, 0.28);
+  background:
+    linear-gradient(180deg, rgba(153, 206, 129, 0.08), rgba(153, 206, 129, 0.02)),
+    rgba(255, 240, 212, 0.03);
+}
+
+.hangar-tab-label {
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hangar-tab-meta {
+  color: var(--text-faint);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hangar-panels {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hangar-panel {
+  display: none;
+  min-height: 100%;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.hangar-panel.active {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.bay-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 116px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.hangar-meter {
+  margin: 0;
+}
+
 .ship-slot-grid {
-  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
@@ -890,8 +994,7 @@ canvas {
 }
 
 .detail-console {
-  min-height: 108px;
-  margin-top: 10px;
+  min-height: 102px;
   padding: 10px;
   display: grid;
   gap: 6px;
@@ -913,9 +1016,12 @@ canvas {
 }
 
 .panel-actions {
-  margin-top: 10px;
   display: grid;
   gap: 8px;
+}
+
+.panel-actions-inline {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .dual-actions {
@@ -924,12 +1030,8 @@ canvas {
 
 .stash-grid,
 .blueprint-list {
-  margin-top: 10px;
   display: grid;
   gap: 8px;
-  max-height: min(34vh, 360px);
-  overflow-y: auto;
-  padding-right: 2px;
 }
 
 .stash-grid {
@@ -962,6 +1064,11 @@ canvas {
   align-items: start;
 }
 
+.forge-columns {
+  display: grid;
+  gap: 12px;
+}
+
 .blueprint-copy {
   display: grid;
   gap: 6px;
@@ -978,10 +1085,6 @@ canvas {
   width: auto;
   min-width: 96px;
   margin: 0;
-}
-
-.fabricator-group + .fabricator-group {
-  margin-top: 12px;
 }
 
 .empty-state {
@@ -1076,23 +1179,27 @@ canvas {
     width: 384px;
   }
 
-  .hangar-shell {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  .hangar-command-main {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    align-items: end;
+  }
+
+  .command-strip {
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
     align-items: start;
   }
 
-  .hangar-command {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-    align-items: center;
-  }
-
-  .drydock-panel {
-    grid-row: span 2;
+  .command-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .stash-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .forge-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 
@@ -1101,27 +1208,43 @@ canvas {
     padding-inline: 10px;
   }
 
-  .hangar-module {
-    padding: 12px;
+  .hangar-command,
+  .hangar-panel {
+    padding: 11px;
   }
 
   .status-chip {
     min-width: 108px;
   }
 
+  .hangar-brand {
+    align-items: center;
+  }
+
   .resource-rack {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .stash-grid,
-  .ship-slot-grid {
+  .bay-summary {
     grid-template-columns: 1fr;
   }
 
-  .dual-actions {
-    grid-template-columns: 1fr;
+  .hangar-tab-label {
+    font-size: 0.68rem;
   }
 
+  .hangar-tab-meta {
+    font-size: 0.48rem;
+  }
+
+  .stash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .ship-slot-grid,
+  .dual-actions,
   .blueprint-card {
     grid-template-columns: 1fr;
   }

@@ -44,6 +44,15 @@
   installing stash items, and breaking salvage down at base
 - Updated loot generation so runs now produce blueprint items, chassis,
   structured components, and salvage that connect into the hangar systems
+- Audited the first hangar pass specifically for portrait-mobile usability and
+  identified the main problem: it still behaves like a stacked webpage instead
+  of a compact game command interface
+- Rebuilt the hangar as a command-deck layout with a persistent launch strip,
+  compact ship/resource summary, and tabbed `Rig` / `Cache` / `Forge` panes
+- Added runtime hangar tab state and action-forward navigation rules so
+  extraction lands in `Cache`, while install/repair flows push back to `Rig`
+- Removed nested scrolling inside stash/forge lists so the active hangar pane is
+  the only scroll context on mobile
 
 ### Test Results
 | Test | Expected | Actual | Status |
@@ -51,6 +60,7 @@
 | `npm install` | Project dependencies install successfully | Installed `three` and `vite`; npm reported 2 moderate vulnerabilities | pass |
 | `npm run build` | Prototype compiles into a production bundle | Build succeeded and emitted `dist/`; Vite warned the main JS chunk is over 500 kB | pass |
 | `npm run build` after hangar integration | Prototype still compiles after adding the between-run layer | Build succeeded; bundle output is `dist/assets/index-BH5sizca.js` with the same chunk-size warning | pass |
+| `npm run build` after hangar UI redesign | Prototype still compiles after the tabbed command layout rewrite | Build succeeded; bundle output is `dist/assets/index-BuyZdxjd.js` with the same chunk-size warning | pass |
 
 ### Errors
 | Error | Resolution |
@@ -58,3 +68,4 @@
 | Default sandbox install path was insufficient for dependency installation | Re-ran `npm install` with escalated permissions |
 | Vite chunk-size warning on production build | Logged as a follow-up optimization rather than blocking the first slice |
 | The old end-of-run flow still assumed a modal summary and fixed ship stats | Replaced it with a hangar-driven flow and derived run stats from the active ship build |
+| The first hangar redesign still had webpage-like information density | Reorganized it into a fixed command deck and a single active work pane |

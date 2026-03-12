@@ -1003,8 +1003,15 @@ class Game {
     this.hangar = {
       overlay: document.getElementById('hangar-overlay'),
       status: document.getElementById('hangar-status'),
+      briefName: document.getElementById('hangar-brief-name'),
       launchStatus: document.getElementById('launch-status'),
       launchButton: document.getElementById('launch-button'),
+      tabBayMeta: document.getElementById('hangar-tab-bay-meta'),
+      tabCacheMeta: document.getElementById('hangar-tab-cache-meta'),
+      tabForgeMeta: document.getElementById('hangar-tab-forge-meta'),
+      tabButtons: Array.from(document.querySelectorAll('[data-hangar-tab]')),
+      panels: Array.from(document.querySelectorAll('[data-hangar-panel]')),
+      commandHullValue: document.getElementById('command-hull-value'),
       chassisName: document.getElementById('hangar-chassis-name'),
       chassisTag: document.getElementById('hangar-chassis-tag'),
       chassisDescription: document.getElementById('hangar-chassis-description'),
@@ -1060,6 +1067,7 @@ class Game {
     this.warpDemons = [];
     this.pointOfInterestMeshes = [];
     this.selectedCargoIndex = null;
+    this.selectedHangarTab = 'bay';
     this.selectedHangarSlot = 'reactor';
     this.selectedStashIndex = null;
     this.cargoSlots = Array(CONFIG.cargoCapacity).fill(null);
@@ -1189,6 +1197,9 @@ class Game {
     this.hangar.repairButton.addEventListener('click', () => this.repairActiveShip());
     this.hangar.installButton.addEventListener('click', () => this.installSelectedStashItem());
     this.hangar.stashScrapButton.addEventListener('click', () => this.scrapSelectedStashItem());
+    this.hangar.tabButtons.forEach((button) => {
+      button.addEventListener('click', () => this.setHangarTab(button.dataset.hangarTab));
+    });
   }
 
   bootstrapProgression() {
@@ -1444,6 +1455,18 @@ class Game {
     };
   }
 
+  setHangarTab(tab) {
+    const validTab = ['bay', 'cache', 'forge'].includes(tab) ? tab : 'bay';
+    this.selectedHangarTab = validTab;
+
+    this.hangar.tabButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.hangarTab === validTab);
+    });
+    this.hangar.panels.forEach((panel) => {
+      panel.classList.toggle('active', panel.dataset.hangarPanel === validTab);
+    });
+  }
+
   resize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -1551,7 +1574,7 @@ class Game {
     this.refreshHUD();
   }
 
-  enterHangar(statusText) {
+  enterHangar(statusText, preferredTab = null) {
     this.clearRunWorld();
     this.runActive = false;
     this.currentRunStats = null;
@@ -1567,6 +1590,7 @@ class Game {
     this.hud.frame.textContent = this.meta.activeShip.chassis.label;
     this.hangar.status.textContent = statusText;
     this.processBlueprintUnlocksFromStash();
+    this.setHangarTab(preferredTab ?? this.selectedHangarTab);
     this.hangar.overlay.classList.remove('hidden');
     this.renderHangar();
     this.refreshCargoUI();
@@ -1578,12 +1602,17 @@ class Game {
     const selectedSlot = this.selectedHangarSlot || SLOT_ORDER[0];
     const slotItem = build.equipped[selectedSlot];
     const repair = this.getRepairPreview(build);
+    const blueprintTotal =
+      this.meta.unlockedComponentBlueprints.length + this.meta.unlockedChassisBlueprints.length;
 
+    this.setHangarTab(this.selectedHangarTab);
     this.hud.frame.textContent = build.chassisItem.label;
+    this.hangar.briefName.textContent = build.chassisItem.label;
     this.hangar.resources.scrap.textContent = this.meta.resources.scrap;
     this.hangar.resources.tech.textContent = this.meta.resources.tech;
     this.hangar.resources.biomass.textContent = this.meta.resources.biomass;
     this.hangar.resources.credits.textContent = this.meta.resources.credits;
+    this.hangar.commandHullValue.textContent = `${Math.round((build.currentHull / build.maxHull) * 100)}%`;
     this.hangar.chassisName.textContent = build.chassisItem.label;
     this.hangar.chassisTag.textContent = build.chassisItem.starter ? 'Replacement Hull' : 'Recovered Frame';
     this.hangar.chassisDescription.textContent = build.chassisItem.description;
@@ -1594,7 +1623,10 @@ class Game {
     this.hangar.holdValue.textContent = `${build.safeStorageCapacity} safe / ${build.cargoCapacity}`;
     this.hangar.scanValue.textContent = `${build.minimapRange}`;
     this.hangar.stashCount.textContent = `${this.meta.stash.length} item${this.meta.stash.length === 1 ? '' : 's'}`;
-    this.hangar.blueprintCount.textContent = `${this.meta.unlockedComponentBlueprints.length + this.meta.unlockedChassisBlueprints.length} online`;
+    this.hangar.blueprintCount.textContent = `${blueprintTotal} online`;
+    this.hangar.tabBayMeta.textContent = build.validPower ? 'Ready' : 'Overload';
+    this.hangar.tabCacheMeta.textContent = `${this.meta.stash.length} stored`;
+    this.hangar.tabForgeMeta.textContent = `${blueprintTotal} online`;
     this.hangar.launchStatus.textContent = build.validPower
       ? `Power stable. FTL spool ${build.extractionDuration}s.`
       : `Grid overload: ${build.powerUse} / ${build.powerBudget}. Refit before launch.`;
@@ -1753,6 +1785,7 @@ class Game {
     this.meta.stash.unshift(item);
     this.sortStash();
     this.selectedStashIndex = this.meta.stash.findIndex((entry) => entry.id === item.id);
+    this.setHangarTab('cache');
     this.showMessage(`Fabricated ${item.label}.`);
     this.renderHangar();
   }
@@ -1789,6 +1822,7 @@ class Game {
 
     this.selectedStashIndex = null;
     this.sortStash();
+    this.setHangarTab('bay');
     this.renderHangar();
   }
 
@@ -1818,6 +1852,7 @@ class Game {
 
     this.spendResources(repair.cost);
     this.meta.activeShip.currentHull = Math.min(build.maxHull, this.meta.activeShip.currentHull + repair.repairAmount);
+    this.setHangarTab('bay');
     this.showMessage(`Patched ${repair.repairAmount} hull integrity.`);
     this.renderHangar();
   }
@@ -2716,7 +2751,10 @@ class Game {
       this.meta.activeShip = this.createReplacementShipState();
     }
     const stashSize = this.meta.stash.length;
-    this.enterHangar(`${summaryText} Stash cache now holds ${stashSize} item${stashSize === 1 ? '' : 's'}.`);
+    this.enterHangar(
+      `${summaryText} Stash cache now holds ${stashSize} item${stashSize === 1 ? '' : 's'}.`,
+      success ? 'cache' : 'bay'
+    );
   }
 
   getProcessingYield(item, multiplier = 1) {

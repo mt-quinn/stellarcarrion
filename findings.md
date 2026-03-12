@@ -152,6 +152,24 @@
 - The right abstraction for this phase is an `activeShip` build that derives
   run-time cargo, FTL-safe storage, extraction spool, minimap range, power
   budget, and hull/shield values from chassis + equipped components.
+- The current hangar succeeds functionally but fails the portrait-mobile
+  efficiency test because it presents ship bay, stash, and forge as one long
+  vertically stacked document.
+- The highest-frequency base actions are `deploy`, `repair`, `install`, and
+  `craft`; those need to be available from a compact command layer without
+  requiring page-like scrolling.
+- A better mental model for the base is:
+  - Command deck: always-visible readiness, ship snapshot, resources, deploy
+  - One active work pane: rig bay, cache, or forge
+  - Thumb-reachable tab rail: fast switching between those modes
+- The redesigned hangar should auto-route the player toward the next likely
+  action:
+  - successful extraction returns to `Cache`
+  - crafting pushes the player to `Cache` to install or scrap
+  - installation and repair push the player back to `Rig`
+- Eliminating nested scroll areas inside the hangar is important for touch
+  clarity. The active pane can scroll, but lists inside it should not become
+  their own independent scroll traps.
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -162,6 +180,8 @@
 | Treat the hangar as the default state on boot after this phase | Makes the run and repair/crafting loops legibly connected |
 | Keep weapons fixed in this hangar pass and focus progression on chassis plus non-weapon ship systems | Delivers the between-runs loop now without exploding the scope of ship-layout logic |
 | Auto-archive extracted blueprint items into permanent unlocks when returning to hangar | Keeps the stash readable and turns blueprints into immediate metagame progress |
+| Redesign the hangar as a compact tabbed command UI instead of a stacked page | Better matches mobile game ergonomics and the user’s requested direction |
+| Use one active pane with top command summary and bottom tab rail | Keeps the base readable and action-forward on portrait phones |
 
 ## Issues Encountered
 | Issue | Resolution |
