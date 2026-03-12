@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <title>Stellar Carrion</title>
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="hud" class="chrome-panel">
+        <div class="hud-row hud-primary">
+          <div class="hud-pill">
+            <span class="label">Hull</span>
+            <span id="hull-value">100</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Shield</span>
+            <span id="shield-value">100</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Cargo</span>
+            <span id="cargo-value">0 / 18</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">FTL Safe</span>
+            <span id="safe-value">0 / 6</span>
+          </div>
+        </div>
+        <div class="hud-row hud-secondary">
+          <div class="hud-pill">
+            <span class="label">Run</span>
+            <span id="run-value">00:00</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Next Demon</span>
+            <span id="demon-value">05:00</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Zone</span>
+            <span id="zone-value">Drift</span>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Resources</span>
+            <span id="resource-value">S 0 / T 0 / B 0 / C 0</span>
+          </div>
+        </div>
+      </div>
+
+      <aside id="cargo-panel" class="chrome-panel hidden">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Extraction Management</p>
+            <h1>Cargo Hold</h1>
+          </div>
+          <div id="extract-status" class="extract-status">Outside zone</div>
+        </div>
+        <p class="panel-copy">
+          Keep the ship inside the extraction zone while managing what fits into
+          FTL-safe storage. The world stays live while you make decisions.
+        </p>
+        <div class="actions">
+          <button id="secure-button" class="action-button">Toggle Safe</button>
+          <button id="combine-button" class="action-button">Combine Match</button>
+          <button id="process-button" class="action-button action-danger">
+            Process to Scrap
+          </button>
+          <button id="spawn-demon-button" class="action-button action-ghost">
+            Trigger Demon
+          </button>
+        </div>
+        <div id="cargo-list" class="cargo-list"></div>
+      </aside>
+
+      <div id="message-log" class="message-log"></div>
+
+      <div id="controls-overlay" class="controls-overlay">
+        <div id="movement-indicator" class="movement-indicator hidden">
+          <div id="movement-knob" class="movement-knob"></div>
+        </div>
+        <div class="aim-pad">
+          <div class="aim-pad-ring"></div>
+          <div id="aim-knob" class="aim-knob hidden"></div>
+          <span class="aim-label">Aim / Fire</span>
+        </div>
+      </div>
+
+      <div id="run-overlay" class="run-overlay hidden">
+        <div class="run-card chrome-panel">
+          <p id="run-outcome" class="eyebrow">Extraction Complete</p>
+          <h2 id="run-title">Run Summary</h2>
+          <p id="run-summary" class="panel-copy"></p>
+          <button id="restart-button" class="action-button action-primary">
+            Launch Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
