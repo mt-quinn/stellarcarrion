@@ -6,27 +6,30 @@ const RARITY_COLORS = [0x667187, 0x8fc4ff, 0x7e7cff, 0xd660ff, 0xffbd59];
 const RESOURCE_KEYS = ['scrap', 'tech', 'biomass', 'credits'];
 
 const CONFIG = {
-  worldWidth: 280,
-  worldHeight: 420,
+  worldWidth: 340,
+  worldHeight: 540,
   runTargetMinutes: 5,
   runTargetMaxMinutes: 15,
   demonSpawnInterval: 300,
   extractionDuration: 7,
   cargoCapacity: 18,
   safeStorageCapacity: 6,
-  playerSpeed: 34,
-  cameraHeight: 78,
+  playerSpeed: 38,
+  cameraHeight: 84,
   moveStickRadius: 72,
   aimStickRadius: 72,
   aimZoneSize: 196,
   pickupRadius: 4.8,
+  playerSpawnZ: 190,
+  spawnSafeRadius: 92,
+  introGraceDuration: 22,
   asteroidCount: 26,
   pointOfInterestCount: 12,
   enemyCounts: {
-    pirate: 7,
-    scavenger: 5,
-    law: 4,
-    carrion: 8
+    pirate: 4,
+    scavenger: 4,
+    law: 3,
+    carrion: 10
   }
 };
 
@@ -94,9 +97,11 @@ const SHIP_ARCHETYPES = {
     label: 'Scavenger Cutter',
     faction: 'player',
     baseSpeed: CONFIG.playerSpeed,
-    maxShield: 18,
-    maxHull: 24,
+    maxShield: 24,
+    maxHull: 32,
     detection: 90,
+    damageMultiplier: 1.15,
+    incomingDamageMultiplier: 0.9,
     weapons: ['rapidLaser', 'machineGun'],
     componentLayout: [
       { type: 'engine', offset: [0, 0.5, 2.4], hp: 8, size: [1.4, 0.8, 1.5], color: 0x5ee0ff },
@@ -110,9 +115,11 @@ const SHIP_ARCHETYPES = {
     label: 'Pirate Ripper',
     faction: 'pirate',
     baseSpeed: 23,
-    maxShield: 10,
-    maxHull: 16,
+    maxShield: 8,
+    maxHull: 13,
     detection: 95,
+    damageMultiplier: 0.78,
+    incomingDamageMultiplier: 1.08,
     weapons: ['machineGun', 'rocket'],
     componentLayout: [
       { type: 'engine', offset: [0, 0.45, 2.2], hp: 7, size: [1.3, 0.75, 1.3], color: 0xff6f5a },
@@ -126,9 +133,11 @@ const SHIP_ARCHETYPES = {
     label: 'Scavenger Needle',
     faction: 'scavenger',
     baseSpeed: 20,
-    maxShield: 8,
-    maxHull: 14,
+    maxShield: 7,
+    maxHull: 12,
     detection: 80,
+    damageMultiplier: 0.72,
+    incomingDamageMultiplier: 1.1,
     weapons: ['rapidLaser'],
     componentLayout: [
       { type: 'engine', offset: [0, 0.45, 2.1], hp: 6, size: [1.15, 0.7, 1.3], color: 0xaee46e },
@@ -141,9 +150,11 @@ const SHIP_ARCHETYPES = {
     label: 'Patrol Lantern',
     faction: 'law',
     baseSpeed: 18,
-    maxShield: 15,
-    maxHull: 20,
+    maxShield: 12,
+    maxHull: 17,
     detection: 110,
+    damageMultiplier: 0.84,
+    incomingDamageMultiplier: 1.06,
     weapons: ['rapidLaser', 'beamLaser'],
     componentLayout: [
       { type: 'engine', offset: [0, 0.45, 2.35], hp: 8, size: [1.4, 0.8, 1.4], color: 0x74c9ff },
@@ -160,6 +171,8 @@ const SHIP_ARCHETYPES = {
     maxShield: 0,
     maxHull: 18,
     detection: 0,
+    damageMultiplier: 0,
+    incomingDamageMultiplier: 1.15,
     weapons: [],
     componentLayout: [
       { type: 'engine', offset: [0, 0.3, 2.2], hp: 5, size: [1.25, 0.65, 1.45], color: 0x566072 },
@@ -498,6 +511,9 @@ class Ship {
     this.speed = options.speed ?? this.archetype.baseSpeed;
     this.processingSpeed = options.processingSpeed ?? 1;
     this.powerBudget = options.powerBudget ?? (archetypeKey === 'player' ? 14 : 10);
+    this.damageMultiplier = options.damageMultiplier ?? this.archetype.damageMultiplier ?? 1;
+    this.incomingDamageMultiplier =
+      options.incomingDamageMultiplier ?? this.archetype.incomingDamageMultiplier ?? 1;
     this.visualSeed = options.visualSeed ?? Math.floor(Math.random() * 1000);
     this.buildVisual();
     this.game.scene.add(this.group);
@@ -593,6 +609,7 @@ class Ship {
     }
 
     this.lastDamageTime = this.game.elapsed;
+    amount *= this.incomingDamageMultiplier;
 
     if (this.shield > 0 && this.getFunctionalCount('shield') > 0) {
       const absorbed = Math.min(this.shield, amount);
@@ -801,6 +818,45 @@ class Game {
     );
   }
 
+  getPatrolDirection(ship, radius = 1) {
+    return new THREE.Vector3(
+      Math.sin(this.elapsed * 0.22 + ship.visualSeed) * radius,
+      0,
+      Math.cos(this.elapsed * 0.26 + ship.visualSeed * 0.7) * radius
+    ).normalize();
+  }
+
+  pickSpawnPosition({
+    minPlayerDistance = 0,
+    minCenterDistance = 0,
+    maxCenterDistance = Infinity,
+    xRange = 0.48,
+    zRange = 0.48
+  } = {}) {
+    let fallback = new THREE.Vector3();
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const candidate = new THREE.Vector3(
+        lerp(-CONFIG.worldWidth * xRange, CONFIG.worldWidth * xRange, Math.random()),
+        0,
+        lerp(-CONFIG.worldHeight * zRange, CONFIG.worldHeight * zRange, Math.random())
+      );
+      const centerDistance = Math.hypot(candidate.x, candidate.z);
+      const playerDistance = this.player ? distanceXZ(candidate, this.player.getWorldPosition()) : Infinity;
+
+      fallback = candidate;
+      if (
+        centerDistance >= minCenterDistance &&
+        centerDistance <= maxCenterDistance &&
+        playerDistance >= minPlayerDistance
+      ) {
+        return candidate;
+      }
+    }
+
+    return fallback;
+  }
+
   bindUI() {
     this.secureButton.addEventListener('click', () => this.toggleSecureSelected());
     this.combineButton.addEventListener('click', () => this.combineSelectedCargo());
@@ -878,7 +934,7 @@ class Game {
     this.selectedCargoId = null;
     this.meta.runCount += 1;
 
-    this.player = new Ship(this, 'player', new THREE.Vector3(0, 0, CONFIG.worldHeight * 0.2), {
+    this.player = new Ship(this, 'player', new THREE.Vector3(0, 0, CONFIG.playerSpawnZ), {
       powerBudget: 14
     });
     this.ships.push(this.player);
@@ -952,6 +1008,8 @@ class Game {
       this.pointOfInterestMeshes.push(mesh);
     }
 
+    this.spawnStarterCarrionCluster();
+
     for (let i = 0; i < CONFIG.enemyCounts.carrion; i += 1) {
       const centerBias = 1 - i / CONFIG.enemyCounts.carrion;
       const ship = new Ship(
@@ -976,17 +1034,58 @@ class Game {
     this.spawnFactionShips('law', CONFIG.enemyCounts.law);
   }
 
+  spawnStarterCarrionCluster() {
+    const anchor = this.player.getWorldPosition();
+    for (let i = 0; i < 3; i += 1) {
+      const angle = -Math.PI / 2 + (i - 1) * 0.45 + Math.random() * 0.2;
+      const distance = 32 + Math.random() * 18;
+      const ship = new Ship(
+        this,
+        'carrion',
+        new THREE.Vector3(
+          anchor.x + Math.cos(angle) * distance,
+          0,
+          clamp(anchor.z - Math.sin(angle) * distance, -CONFIG.worldHeight * 0.42, CONFIG.worldHeight * 0.42)
+        ),
+        {
+          richness: 1.1 + Math.random() * 0.35,
+          maxHull: 12 + Math.random() * 6
+        }
+      );
+      ship.group.rotation.y = Math.random() * Math.PI * 2;
+      this.ships.push(ship);
+    }
+  }
+
   spawnFactionShips(faction, count) {
     for (let i = 0; i < count; i += 1) {
-      const radiusBias = faction === 'pirate' ? 0.18 : faction === 'law' ? 0.28 : 0.22;
+      const spawnPosition = faction === 'pirate'
+        ? this.pickSpawnPosition({
+            minPlayerDistance: CONFIG.spawnSafeRadius + 46,
+            minCenterDistance: 45,
+            maxCenterDistance: 170,
+            xRange: 0.42,
+            zRange: 0.34
+          })
+        : faction === 'law'
+          ? this.pickSpawnPosition({
+              minPlayerDistance: CONFIG.spawnSafeRadius,
+              minCenterDistance: 120,
+              maxCenterDistance: 245,
+              xRange: 0.46,
+              zRange: 0.46
+            })
+          : this.pickSpawnPosition({
+              minPlayerDistance: CONFIG.spawnSafeRadius,
+              minCenterDistance: 70,
+              maxCenterDistance: 210,
+              xRange: 0.44,
+              zRange: 0.42
+            });
       const ship = new Ship(
         this,
         faction,
-        new THREE.Vector3(
-          lerp(-CONFIG.worldWidth * (0.48 - radiusBias), CONFIG.worldWidth * (0.48 - radiusBias), Math.random()),
-          0,
-          lerp(-CONFIG.worldHeight * (0.48 - radiusBias), CONFIG.worldHeight * (0.48 - radiusBias), Math.random())
-        )
+        spawnPosition
       );
       ship.group.rotation.y = Math.random() * Math.PI * 2;
       this.ships.push(ship);
@@ -1043,6 +1142,7 @@ class Game {
       owner: ship,
       faction: ship.faction,
       weaponPreset,
+      damage: weaponPreset.damage * ship.damageMultiplier,
       direction: direction.clone().normalize(),
       speed: weaponPreset.projectileSpeed,
       age: 0,
@@ -1086,7 +1186,7 @@ class Game {
           }
           const componentPos = component.mesh.getWorldPosition(new THREE.Vector3());
           if (distanceXZ(componentPos, projectile.mesh.position) < component.radius + preset.radius) {
-            ship.takeDamage(component, preset.damage, projectile.faction);
+            ship.takeDamage(component, projectile.damage ?? preset.damage, projectile.faction);
             if (projectile.owner === this.player) {
               this.registerPlayerAggression(ship);
             }
@@ -1401,17 +1501,29 @@ class Game {
 
   updateAIShip(ship, dt) {
     const pos = ship.getWorldPosition();
+    const playerDistance = distanceXZ(this.player.getWorldPosition(), pos);
+    const introGraceActive = this.runTime < CONFIG.introGraceDuration;
+    const playerDetected = playerDistance < ship.archetype.detection;
     let target = null;
     let desiredDirection = new THREE.Vector3();
 
     if (ship.faction === 'pirate') {
-      target = this.player;
-      const toTarget = target.getWorldPosition().clone().sub(pos).setY(0);
-      const distance = toTarget.length();
-      desiredDirection.copy(toTarget.normalize());
-      ship.isFiring = distance < 70;
-      if (distance < 32) {
-        desiredDirection.multiplyScalar(-0.25);
+      const shouldPressPlayer =
+        playerDetected &&
+        (!introGraceActive || playerDistance < ship.archetype.detection * 0.55);
+
+      if (shouldPressPlayer) {
+        target = this.player;
+        const toTarget = target.getWorldPosition().clone().sub(pos).setY(0);
+        const distance = toTarget.length();
+        desiredDirection.copy(toTarget.normalize());
+        ship.isFiring = distance < 68;
+        if (distance < 30) {
+          desiredDirection.multiplyScalar(-0.2);
+        }
+      } else {
+        desiredDirection.copy(this.getPatrolDirection(ship, 1));
+        ship.isFiring = false;
       }
     } else if (ship.faction === 'scavenger') {
       const carrion = this.ships
@@ -1420,32 +1532,42 @@ class Game {
       if (carrion) {
         const playerDistance = distanceXZ(this.player.getWorldPosition(), carrion.getWorldPosition());
         const shipDistance = distanceXZ(ship.getWorldPosition(), carrion.getWorldPosition());
-        if (playerDistance < 26 && shipDistance < 26) {
+        if (playerDistance < 24 && shipDistance < 24 && playerDetected) {
           if (ship.disposition > 0.55) {
             target = this.player;
             desiredDirection.copy(this.player.getWorldPosition().clone().sub(pos).setY(0).normalize());
-            ship.isFiring = true;
+            ship.isFiring = !introGraceActive;
           } else {
             desiredDirection.copy(pos.clone().sub(this.player.getWorldPosition()).setY(0).normalize());
+            ship.isFiring = false;
           }
         } else {
           desiredDirection.copy(carrion.getWorldPosition().clone().sub(pos).setY(0).normalize());
+          ship.isFiring = false;
         }
+      } else {
+        desiredDirection.copy(this.getPatrolDirection(ship, 1));
+        ship.isFiring = false;
       }
     } else if (ship.faction === 'law') {
-      if (this.wantedTimer > 0 && distanceXZ(this.player.getWorldPosition(), pos) < 70) {
+      if (this.wantedTimer > 0 && playerDistance < ship.archetype.detection) {
         target = this.player;
       } else {
         target = this.ships
-          .filter((candidate) => candidate.faction === 'pirate' && !candidate.dead)
+          .filter(
+            (candidate) =>
+              candidate.faction === 'pirate' &&
+              !candidate.dead &&
+              distanceXZ(candidate.getWorldPosition(), pos) < ship.archetype.detection * 1.3
+          )
           .sort((a, b) => distanceXZ(a.getWorldPosition(), pos) - distanceXZ(b.getWorldPosition(), pos))[0];
       }
 
       if (target) {
         desiredDirection.copy(target.getWorldPosition().clone().sub(pos).setY(0).normalize());
-        ship.isFiring = distanceXZ(target.getWorldPosition(), pos) < 78;
+        ship.isFiring = distanceXZ(target.getWorldPosition(), pos) < 74;
       } else {
-        desiredDirection.set(Math.sin(this.elapsed * 0.3 + ship.visualSeed), 0, Math.cos(this.elapsed * 0.3 + ship.visualSeed));
+        desiredDirection.copy(this.getPatrolDirection(ship, 1));
         ship.isFiring = false;
       }
     }
@@ -1489,6 +1611,7 @@ class Game {
             owner: ship,
             faction: ship.faction,
             weaponPreset: preset,
+            damage: preset.damage * ship.damageMultiplier,
             direction: ship.aimDirection.clone(),
             speed: 0,
             age: 0,
