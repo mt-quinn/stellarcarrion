@@ -11,54 +11,93 @@
   </head>
   <body>
     <div id="app">
-      <div id="hud" class="chrome-panel">
-        <div class="hud-row hud-primary">
-          <div class="hud-pill">
-            <span class="label">Hull</span>
-            <span id="hull-value">100</span>
+      <div id="hud" class="hud-shell">
+        <section class="hud-module ship-rig">
+          <div class="module-header">
+            <p class="eyebrow">Hull Frame</p>
+            <p class="module-callout">SCV-01</p>
           </div>
-          <div class="hud-pill">
-            <span class="label">Shield</span>
-            <span id="shield-value">100</span>
+          <div class="meter meter-hull">
+            <div class="meter-head">
+              <span class="meter-label">Hull</span>
+              <span id="hull-value" class="meter-value">100%</span>
+            </div>
+            <div class="meter-track">
+              <div id="hull-bar" class="meter-fill hull-fill"></div>
+            </div>
           </div>
-          <div class="hud-pill">
-            <span class="label">Cargo</span>
-            <span id="cargo-value">0 / 18</span>
+          <div class="meter meter-shield">
+            <div class="meter-head">
+              <span class="meter-label">Shield</span>
+              <span id="shield-value" class="meter-value">100%</span>
+            </div>
+            <div class="meter-track">
+              <div id="shield-bar" class="meter-fill shield-fill"></div>
+            </div>
           </div>
-          <div class="hud-pill">
-            <span class="label">FTL Safe</span>
-            <span id="safe-value">0 / 6</span>
+        </section>
+
+        <section class="hud-module threat-ribbon">
+          <div class="ribbon-cell">
+            <p class="eyebrow">Run</p>
+            <div id="run-value" class="ribbon-value">00:00</div>
           </div>
-        </div>
-        <div class="hud-row hud-secondary">
-          <div class="hud-pill">
-            <span class="label">Run</span>
-            <span id="run-value">00:00</span>
+          <div class="ribbon-core">
+            <p class="eyebrow">Next Rift</p>
+            <div id="demon-value" class="ribbon-value">05:00</div>
           </div>
-          <div class="hud-pill">
-            <span class="label">Next Demon</span>
-            <span id="demon-value">05:00</span>
+        </section>
+
+        <section class="hud-module cargo-rig">
+          <div class="stack-node">
+            <p class="eyebrow">Hold</p>
+            <div id="cargo-value" class="stack-value">0 / 18</div>
+            <div class="stack-track">
+              <div id="cargo-bar" class="stack-fill cargo-fill"></div>
+            </div>
           </div>
-          <div class="hud-pill">
-            <span class="label">Zone</span>
-            <span id="zone-value">Drift</span>
+          <div class="stack-node stack-node-safe">
+            <p class="eyebrow">FTL Safe</p>
+            <div id="safe-value" class="stack-value">0 / 6</div>
+            <div class="stack-track">
+              <div id="safe-bar" class="stack-fill safe-fill"></div>
+            </div>
           </div>
-          <div class="hud-pill">
-            <span class="label">Resources</span>
-            <span id="resource-value">S 0 / T 0 / B 0 / C 0</span>
+          <div class="resource-rack">
+            <div class="resource-cell resource-scrap">
+              <span class="resource-key">S</span>
+              <span id="scrap-value" class="resource-value">0</span>
+            </div>
+            <div class="resource-cell resource-tech">
+              <span class="resource-key">T</span>
+              <span id="tech-value" class="resource-value">0</span>
+            </div>
+            <div class="resource-cell resource-biomass">
+              <span class="resource-key">B</span>
+              <span id="biomass-value" class="resource-value">0</span>
+            </div>
+            <div class="resource-cell resource-credits">
+              <span class="resource-key">C</span>
+              <span id="credits-value" class="resource-value">0</span>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section class="hud-module zone-pod">
+          <p class="eyebrow">Vector</p>
+          <div id="zone-value" class="zone-text">Drift</div>
+        </section>
       </div>
 
-      <aside id="cargo-panel" class="chrome-panel hidden">
-        <div class="panel-header">
+      <aside id="cargo-panel" class="console-panel hidden">
+        <div class="console-header">
           <div>
             <p class="eyebrow">Extraction Management</p>
             <h1>Cargo Hold</h1>
           </div>
           <div id="extract-status" class="extract-status">Outside zone</div>
         </div>
-        <p class="panel-copy">
+        <p class="panel-copy console-copy">
           Keep the ship inside the extraction zone while managing what fits into
           FTL-safe storage. The world stays live while you make decisions.
         </p>
@@ -89,7 +128,7 @@
       </div>
 
       <div id="run-overlay" class="run-overlay hidden">
-        <div class="run-card chrome-panel">
+        <div class="run-card console-panel">
           <p id="run-outcome" class="eyebrow">Extraction Complete</p>
           <h2 id="run-title">Run Summary</h2>
           <p id="run-summary" class="panel-copy"></p>

@@ -689,13 +689,20 @@ class Game {
     this.movementIndicator = document.getElementById('movement-indicator');
     this.hud = {
       hull: document.getElementById('hull-value'),
+      hullBar: document.getElementById('hull-bar'),
       shield: document.getElementById('shield-value'),
+      shieldBar: document.getElementById('shield-bar'),
       cargo: document.getElementById('cargo-value'),
+      cargoBar: document.getElementById('cargo-bar'),
       safe: document.getElementById('safe-value'),
+      safeBar: document.getElementById('safe-bar'),
       run: document.getElementById('run-value'),
       demon: document.getElementById('demon-value'),
       zone: document.getElementById('zone-value'),
-      resources: document.getElementById('resource-value')
+      scrap: document.getElementById('scrap-value'),
+      tech: document.getElementById('tech-value'),
+      biomass: document.getElementById('biomass-value'),
+      credits: document.getElementById('credits-value')
     };
     this.cargoPanel = document.getElementById('cargo-panel');
     this.cargoList = document.getElementById('cargo-list');
@@ -1789,7 +1796,12 @@ class Game {
     const safeCount = this.cargo.filter((item) => item.safe).length;
     this.hud.cargo.textContent = `${this.cargo.length} / ${CONFIG.cargoCapacity}`;
     this.hud.safe.textContent = `${safeCount} / ${CONFIG.safeStorageCapacity}`;
-    this.hud.resources.textContent = `S ${this.meta.resources.scrap + this.pendingResources.scrap} / T ${this.meta.resources.tech + this.pendingResources.tech} / B ${this.meta.resources.biomass + this.pendingResources.biomass} / C ${this.meta.resources.credits + this.pendingResources.credits}`;
+    this.hud.cargoBar.style.width = `${(this.cargo.length / CONFIG.cargoCapacity) * 100}%`;
+    this.hud.safeBar.style.width = `${(safeCount / CONFIG.safeStorageCapacity) * 100}%`;
+    this.hud.scrap.textContent = `${this.meta.resources.scrap + this.pendingResources.scrap}`;
+    this.hud.tech.textContent = `${this.meta.resources.tech + this.pendingResources.tech}`;
+    this.hud.biomass.textContent = `${this.meta.resources.biomass + this.pendingResources.biomass}`;
+    this.hud.credits.textContent = `${this.meta.resources.credits + this.pendingResources.credits}`;
 
     this.cargoList.innerHTML = '';
     for (const item of this.cargo) {
@@ -1823,8 +1835,12 @@ class Game {
   }
 
   refreshHUD() {
-    this.hud.hull.textContent = `${Math.round((this.player.hull / this.player.maxHull) * 100)}%`;
-    this.hud.shield.textContent = `${Math.round((this.player.shield / Math.max(1, this.player.maxShield)) * 100)}%`;
+    const hullPercent = Math.round((this.player.hull / this.player.maxHull) * 100);
+    const shieldPercent = Math.round((this.player.shield / Math.max(1, this.player.maxShield)) * 100);
+    this.hud.hull.textContent = `${hullPercent}%`;
+    this.hud.shield.textContent = `${shieldPercent}%`;
+    this.hud.hullBar.style.width = `${hullPercent}%`;
+    this.hud.shieldBar.style.width = `${shieldPercent}%`;
     this.hud.run.textContent = formatTime(this.runTime);
     this.hud.demon.textContent = formatTime(Math.max(0, this.nextDemonAt - this.runTime));
   }
