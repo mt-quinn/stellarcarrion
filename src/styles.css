@@ -1203,50 +1203,250 @@ canvas {
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 640px), (max-height: 760px) {
   .hangar-overlay {
-    padding-inline: 10px;
+    padding:
+      calc(max(8px, env(safe-area-inset-top)) + 2px)
+      max(8px, env(safe-area-inset-right))
+      calc(max(10px, env(safe-area-inset-bottom)) + 6px)
+      max(8px, env(safe-area-inset-left));
+  }
+
+  .hangar-frame {
+    gap: 8px;
   }
 
   .hangar-command,
   .hangar-panel {
-    padding: 11px;
+    padding: 8px;
   }
 
-  .status-chip {
-    min-width: 108px;
+  .hangar-command {
+    gap: 8px;
   }
 
   .hangar-brand {
     align-items: center;
+    gap: 8px;
   }
 
+  .hangar-title {
+    font-size: clamp(0.92rem, 3.2vw, 1.1rem);
+  }
+
+  .command-status,
+  .hangar-copy {
+    display: none;
+  }
+
+  .hangar-command-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .command-ship {
+    gap: 2px;
+  }
+
+  .command-ship-name {
+    font-size: clamp(0.9rem, 3.8vw, 1.04rem);
+  }
+
+  .launch-cluster {
+    gap: 6px;
+  }
+
+  .launch-readout {
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+
+  .launch-readout .eyebrow {
+    display: none;
+  }
+
+  .launch-value,
+  .command-value,
+  .status-value {
+    font-size: 0.68rem;
+  }
+
+  .action-button {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.68rem;
+  }
+
+  .command-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    align-items: center;
+  }
+
+  .command-stats,
   .resource-rack {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .command-stat,
+  .resource-cell {
+    min-height: 38px;
+    padding: 5px 6px;
+    gap: 3px;
+  }
+
+  .resource-key {
+    font-size: 0.44rem;
+    letter-spacing: 0.12em;
+  }
+
+  .resource-value {
+    font-size: 0.68rem;
+  }
+
+  .hangar-tabbar {
+    gap: 6px;
+  }
+
+  .hangar-tab-label {
+    font-size: 0.64rem;
+  }
+
+  .hangar-tab-meta {
+    font-size: 0.42rem;
+  }
+
+  .hangar-tab {
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+
+  .hangar-panel.active {
+    gap: 8px;
+  }
+
+  .panel-head {
+    gap: 8px;
+  }
+
+  .panel-title {
+    font-size: clamp(0.9rem, 3.6vw, 1.08rem);
+  }
+
+  .status-chip,
+  .compact-chip {
+    min-width: 86px;
+    min-height: 40px;
+    padding: 6px 8px;
   }
 
   .bay-summary {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 
-  .hangar-tab-label {
-    font-size: 0.68rem;
+  .command-stat-large {
+    min-height: 48px;
   }
 
-  .hangar-tab-meta {
-    font-size: 0.48rem;
+  .detail-console {
+    min-height: 84px;
+    padding: 8px;
   }
 
   .stash-grid {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 430px) {
+  .forge-columns,
   .ship-slot-grid,
   .dual-actions,
   .blueprint-card {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px), (max-height: 700px) {
+  .hangar-brand {
+    display: none;
+  }
+
+  .hangar-command {
+    gap: 6px;
+  }
+
+  .hangar-command-main {
+    gap: 6px;
+  }
+
+  .command-ship .eyebrow {
+    display: none;
+  }
+
+  .command-ship-name {
+    font-size: 0.88rem;
+  }
+
+  .launch-readout {
+    min-height: 36px;
+    padding: 5px 7px;
+  }
+
+  .launch-value {
+    font-size: 0.62rem;
+  }
+
+  .action-button {
+    min-height: 38px;
+    padding: 7px 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .command-strip {
+    gap: 5px;
+  }
+
+  .command-stats,
+  .resource-rack {
+    gap: 5px;
+  }
+
+  .command-stat,
+  .resource-cell {
+    min-height: 34px;
+    padding: 4px 5px;
+  }
+
+  .command-value,
+  .resource-value {
+    font-size: 0.62rem;
+  }
+
+  .resource-key,
+  .hangar-tab-meta {
+    font-size: 0.4rem;
+  }
+
+  .hangar-tab {
+    min-height: 38px;
+    padding: 5px 6px;
+  }
+
+  .hangar-tab-label {
+    font-size: 0.6rem;
+  }
+
+  .hangar-panel {
+    padding: 7px;
+  }
+
+  .status-chip,
+  .compact-chip {
+    min-width: 78px;
+    min-height: 36px;
+    padding: 5px 7px;
   }
 
   .blueprint-card .action-button {
