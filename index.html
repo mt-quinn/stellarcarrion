@@ -48,70 +48,60 @@
           </div>
         </section>
 
-        <section class="hud-module cargo-rig">
-          <div class="stack-node">
-            <p class="eyebrow">Hold</p>
-            <div id="cargo-value" class="stack-value">0 / 18</div>
-            <div class="stack-track">
-              <div id="cargo-bar" class="stack-fill cargo-fill"></div>
-            </div>
-          </div>
-          <div class="stack-node stack-node-safe">
-            <p class="eyebrow">FTL Safe</p>
-            <div id="safe-value" class="stack-value">0 / 6</div>
-            <div class="stack-track">
-              <div id="safe-bar" class="stack-fill safe-fill"></div>
-            </div>
-          </div>
-          <div class="resource-rack">
-            <div class="resource-cell resource-scrap">
-              <span class="resource-key">S</span>
-              <span id="scrap-value" class="resource-value">0</span>
-            </div>
-            <div class="resource-cell resource-tech">
-              <span class="resource-key">T</span>
-              <span id="tech-value" class="resource-value">0</span>
-            </div>
-            <div class="resource-cell resource-biomass">
-              <span class="resource-key">B</span>
-              <span id="biomass-value" class="resource-value">0</span>
-            </div>
-            <div class="resource-cell resource-credits">
-              <span class="resource-key">C</span>
-              <span id="credits-value" class="resource-value">0</span>
-            </div>
-          </div>
-        </section>
-
         <section class="hud-module zone-pod">
           <p class="eyebrow">Vector</p>
           <div id="zone-value" class="zone-text">Drift</div>
+          <div id="ftl-timer" class="zone-timer hidden">30s</div>
+          <button id="manifest-toggle" class="mini-button hidden">
+            <span class="mini-label">Manifest</span>
+            <span id="cargo-value" class="mini-value">0 / 18</span>
+          </button>
         </section>
       </div>
 
       <aside id="cargo-panel" class="console-panel hidden">
         <div class="console-header">
           <div>
-            <p class="eyebrow">Extraction Management</p>
-            <h1>Cargo Hold</h1>
+            <p class="eyebrow">FTL Manifest</p>
+            <h1>Jump Hold</h1>
           </div>
-          <div id="extract-status" class="extract-status">Outside zone</div>
+          <button id="manifest-close" class="mini-button mini-button-close">
+            <span class="mini-label">Close</span>
+          </button>
+        </div>
+        <div class="console-topline">
+          <div id="extract-status" class="extract-status">Charging 0 / 30s</div>
+          <div class="metric-chip">
+            <span class="eyebrow">Secured</span>
+            <span id="safe-value" class="metric-value">0 / 6</span>
+          </div>
         </div>
         <p class="panel-copy console-copy">
-          Keep the ship inside the extraction zone while managing what fits into
-          FTL-safe storage. The world stays live while you make decisions.
+          Top cells are FTL-safe. Tap an item, then tap a target slot to move it
+          or an identical item to combine it. Long-hold any item to process it.
         </p>
-        <div class="actions">
-          <button id="secure-button" class="action-button">Toggle Safe</button>
-          <button id="combine-button" class="action-button">Combine Match</button>
-          <button id="process-button" class="action-button action-danger">
-            Process to Scrap
-          </button>
-          <button id="spawn-demon-button" class="action-button action-ghost">
-            Trigger Demon
-          </button>
+        <div class="resource-rack manifest-resources">
+          <div class="resource-cell resource-scrap">
+            <span class="resource-key">Scrap</span>
+            <span id="scrap-value" class="resource-value">0</span>
+          </div>
+          <div class="resource-cell resource-tech">
+            <span class="resource-key">Tech</span>
+            <span id="tech-value" class="resource-value">0</span>
+          </div>
+          <div class="resource-cell resource-biomass">
+            <span class="resource-key">Biomass</span>
+            <span id="biomass-value" class="resource-value">0</span>
+          </div>
+          <div class="resource-cell resource-credits">
+            <span class="resource-key">Credits</span>
+            <span id="credits-value" class="resource-value">0</span>
+          </div>
         </div>
-        <div id="cargo-list" class="cargo-list"></div>
+        <div class="safe-band-label">
+          <span class="eyebrow">FTL-safe storage occupies the first 6 cells</span>
+        </div>
+        <div id="cargo-grid" class="cargo-grid"></div>
       </aside>
 
       <div id="message-log" class="message-log"></div>

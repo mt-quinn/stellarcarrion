@@ -11,7 +11,7 @@ const CONFIG = {
   runTargetMinutes: 5,
   runTargetMaxMinutes: 15,
   demonSpawnInterval: 300,
-  extractionDuration: 7,
+  extractionDuration: 30,
   cargoCapacity: 18,
   safeStorageCapacity: 6,
   playerSpeed: 38,
@@ -693,30 +693,28 @@ class Game {
       shield: document.getElementById('shield-value'),
       shieldBar: document.getElementById('shield-bar'),
       cargo: document.getElementById('cargo-value'),
-      cargoBar: document.getElementById('cargo-bar'),
       safe: document.getElementById('safe-value'),
-      safeBar: document.getElementById('safe-bar'),
       run: document.getElementById('run-value'),
       demon: document.getElementById('demon-value'),
       zone: document.getElementById('zone-value'),
+      ftlTimer: document.getElementById('ftl-timer'),
       scrap: document.getElementById('scrap-value'),
       tech: document.getElementById('tech-value'),
       biomass: document.getElementById('biomass-value'),
       credits: document.getElementById('credits-value')
     };
     this.cargoPanel = document.getElementById('cargo-panel');
-    this.cargoList = document.getElementById('cargo-list');
+    this.cargoGrid = document.getElementById('cargo-grid');
     this.extractStatus = document.getElementById('extract-status');
+    this.manifestToggle = document.getElementById('manifest-toggle');
+    this.manifestLabel = this.manifestToggle.querySelector('.mini-label');
+    this.manifestClose = document.getElementById('manifest-close');
     this.messageLog = document.getElementById('message-log');
     this.runOverlay = document.getElementById('run-overlay');
     this.runOutcome = document.getElementById('run-outcome');
     this.runTitle = document.getElementById('run-title');
     this.runSummary = document.getElementById('run-summary');
     this.restartButton = document.getElementById('restart-button');
-    this.secureButton = document.getElementById('secure-button');
-    this.combineButton = document.getElementById('combine-button');
-    this.processButton = document.getElementById('process-button');
-    this.spawnDemonButton = document.getElementById('spawn-demon-button');
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x04070c);
@@ -744,8 +742,9 @@ class Game {
     this.extractionZones = [];
     this.warpDemons = [];
     this.pointOfInterestMeshes = [];
-    this.selectedCargoId = null;
-    this.cargo = [];
+    this.selectedCargoIndex = null;
+    this.cargoSlots = Array(CONFIG.cargoCapacity).fill(null);
+    this.isCargoPanelOpen = false;
     this.pendingResources = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
     this.meta = {
       resources: { scrap: 0, tech: 0, biomass: 0, credits: 0 },
@@ -865,10 +864,10 @@ class Game {
   }
 
   bindUI() {
-    this.secureButton.addEventListener('click', () => this.toggleSecureSelected());
-    this.combineButton.addEventListener('click', () => this.combineSelectedCargo());
-    this.processButton.addEventListener('click', () => this.processSelectedCargo());
-    this.spawnDemonButton.addEventListener('click', () => this.spawnWarpDemon(true));
+    this.manifestToggle.addEventListener('click', () => {
+      this.setCargoPanelOpen(!this.isCargoPanelOpen);
+    });
+    this.manifestClose.addEventListener('click', () => this.setCargoPanelOpen(false));
     this.restartButton.addEventListener('click', () => {
       this.runOverlay.classList.add('hidden');
       this.startRun();
@@ -936,9 +935,13 @@ class Game {
     this.extractionTimer = 0;
     this.currentExtractionZone = null;
     this.wantedTimer = 0;
-    this.cargo = [];
+    this.cargoSlots = Array(CONFIG.cargoCapacity).fill(null);
     this.pendingResources = { scrap: 0, tech: 0, biomass: 0, credits: 0 };
-    this.selectedCargoId = null;
+    this.selectedCargoIndex = null;
+    this.isCargoPanelOpen = false;
+    this.cargoPanel.classList.add('hidden');
+    this.manifestToggle.classList.add('hidden');
+    this.hud.ftlTimer.classList.add('hidden');
     this.meta.runCount += 1;
 
     this.player = new Ship(this, 'player', new THREE.Vector3(0, 0, CONFIG.playerSpawnZ), {
@@ -1378,6 +1381,114 @@ class Game {
     });
   }
 
+  getFilledCargoCount() {
+    return this.cargoSlots.filter(Boolean).length;
+  }
+
+  getSafeSlotCount() {
+    return this.cargoSlots.slice(0, CONFIG.safeStorageCapacity).filter(Boolean).length;
+  }
+
+  getFirstEmptyCargoIndex() {
+    return this.cargoSlots.findIndex((item) => item === null);
+  }
+
+  setCargoPanelOpen(isOpen) {
+    this.isCargoPanelOpen = Boolean(isOpen && this.currentExtractionZone);
+    this.cargoPanel.classList.toggle('hidden', !this.isCargoPanelOpen);
+    this.manifestLabel.textContent = this.isCargoPanelOpen ? 'Hide Hold' : 'Manifest';
+  }
+
+  getCargoItemIcon(item) {
+    if (item.category === 'resource') {
+      return item.resourceKey[0].toUpperCase();
+    }
+
+    return {
+      component: 'SYS',
+      blueprint: 'BP',
+      mod: 'MOD'
+    }[item.category] ?? 'UNK';
+  }
+
+  canCombineCargoItems(sourceItem, targetItem) {
+    return (
+      sourceItem &&
+      targetItem &&
+      sourceItem.combineKey &&
+      sourceItem.combineKey === targetItem.combineKey &&
+      sourceItem.rarityIndex === targetItem.rarityIndex &&
+      sourceItem.rarityIndex < RARITIES.length - 1
+    );
+  }
+
+  handleCargoSlotTap(index) {
+    const selectedIndex = this.selectedCargoIndex;
+    const selectedItem = selectedIndex !== null ? this.cargoSlots[selectedIndex] : null;
+    const targetItem = this.cargoSlots[index];
+
+    if (selectedIndex === null) {
+      if (targetItem) {
+        this.selectedCargoIndex = index;
+        this.refreshCargoUI();
+      }
+      return;
+    }
+
+    if (selectedIndex === index) {
+      this.selectedCargoIndex = null;
+      this.refreshCargoUI();
+      return;
+    }
+
+    if (!selectedItem) {
+      this.selectedCargoIndex = null;
+      this.refreshCargoUI();
+      return;
+    }
+
+    if (this.canCombineCargoItems(selectedItem, targetItem)) {
+      const upgradedItem = {
+        ...targetItem,
+        id: crypto.randomUUID(),
+        rarityIndex: targetItem.rarityIndex + 1
+      };
+      this.cargoSlots[selectedIndex] = null;
+      this.cargoSlots[index] = upgradedItem;
+      this.selectedCargoIndex = null;
+      this.showMessage(`${targetItem.label} improved to ${RARITIES[upgradedItem.rarityIndex]}.`);
+      this.refreshCargoUI();
+      return;
+    }
+
+    this.cargoSlots[selectedIndex] = targetItem ?? null;
+    this.cargoSlots[index] = selectedItem;
+    this.selectedCargoIndex = null;
+    this.refreshCargoUI();
+  }
+
+  processCargoSlot(index) {
+    const item = this.cargoSlots[index];
+    if (!item) {
+      return;
+    }
+
+    const yields = item.category === 'resource'
+      ? { [item.resourceKey]: item.amount }
+      : this.getProcessingYield(item);
+
+    for (const key of RESOURCE_KEYS) {
+      this.pendingResources[key] += yields[key] ?? 0;
+    }
+
+    this.cargoSlots[index] = null;
+    if (this.selectedCargoIndex === index) {
+      this.selectedCargoIndex = null;
+    }
+    this.showMessage(`Processed ${item.label}.`);
+    this.refreshCargoUI();
+  }
+
   updatePickups(dt) {
     const removal = [];
     for (const pickup of this.pickups) {
@@ -1385,11 +1496,12 @@ class Game {
       pickup.mesh.position.y = 1.5 + Math.sin(pickup.bob) * 0.55;
       pickup.mesh.rotation.y += dt;
       if (distanceXZ(pickup.mesh.position, this.player.getWorldPosition()) < CONFIG.pickupRadius) {
-        if (this.cargo.length >= CONFIG.cargoCapacity) {
+        const emptySlotIndex = this.getFirstEmptyCargoIndex();
+        if (emptySlotIndex < 0) {
           this.showMessage('Cargo hold full. Head for extraction.');
           continue;
         }
-        this.cargo.push(pickup.item);
+        this.cargoSlots[emptySlotIndex] = pickup.item;
         this.showMessage(`Collected ${pickup.item.label}.`);
         removal.push(pickup);
         this.refreshCargoUI();
@@ -1634,29 +1746,41 @@ class Game {
   }
 
   updateExtraction(dt) {
+    const previousZone = this.currentExtractionZone;
     this.currentExtractionZone = this.extractionZones.find(
       (zone) => distanceXZ(zone.position, this.player.getWorldPosition()) < zone.radius
     );
 
     if (this.currentExtractionZone) {
+      if (!previousZone) {
+        this.selectedCargoIndex = null;
+        this.setCargoPanelOpen(false);
+      }
       this.extractionTimer = clamp(this.extractionTimer + dt, 0, CONFIG.extractionDuration);
-      this.cargoPanel.classList.remove('hidden');
-      this.extractStatus.textContent = `Charging FTL ${this.extractionTimer.toFixed(1)} / ${CONFIG.extractionDuration.toFixed(1)}`;
-      this.hud.zone.textContent = 'Extraction';
+      this.extractStatus.textContent = `Charging ${this.extractionTimer.toFixed(1)} / ${CONFIG.extractionDuration}s`;
+      this.hud.zone.textContent = 'Jump';
+      this.hud.ftlTimer.classList.remove('hidden');
+      this.hud.ftlTimer.textContent = `${Math.max(0, CONFIG.extractionDuration - this.extractionTimer).toFixed(0)}s`;
+      this.manifestToggle.classList.remove('hidden');
       if (this.extractionTimer >= CONFIG.extractionDuration) {
         this.completeExtraction();
       }
     } else {
+      if (previousZone) {
+        this.selectedCargoIndex = null;
+        this.setCargoPanelOpen(false);
+      }
       this.extractionTimer = Math.max(0, this.extractionTimer - dt * 0.35);
       this.extractStatus.textContent = 'Outside zone';
       this.hud.zone.textContent = 'Drift';
-      this.cargoPanel.classList.add('hidden');
+      this.hud.ftlTimer.classList.add('hidden');
+      this.manifestToggle.classList.add('hidden');
     }
   }
 
   completeExtraction() {
-    const extractedItems = this.cargo.filter((item) => item.safe);
-    const jettisoned = this.cargo.filter((item) => !item.safe);
+    const extractedItems = this.cargoSlots.slice(0, CONFIG.safeStorageCapacity).filter(Boolean);
+    const jettisoned = this.cargoSlots.slice(CONFIG.safeStorageCapacity).filter(Boolean);
 
     for (const key of RESOURCE_KEYS) {
       this.meta.resources[key] += this.pendingResources[key];
@@ -1686,78 +1810,7 @@ class Game {
     this.runTitle.textContent = success ? 'Jump Successful' : 'Ship Lost';
     this.runSummary.textContent = `${summaryText} Meta stash now holds ${this.meta.stash.length} items.`;
     this.runOverlay.classList.remove('hidden');
-  }
-
-  toggleSecureSelected() {
-    const item = this.cargo.find((entry) => entry.id === this.selectedCargoId);
-    if (!item) {
-      this.showMessage('Select a cargo item first.');
-      return;
-    }
-
-    const safeCount = this.cargo.filter((entry) => entry.safe).length;
-    if (!item.safe && safeCount >= CONFIG.safeStorageCapacity) {
-      this.showMessage('FTL-safe storage is full.');
-      return;
-    }
-
-    item.safe = !item.safe;
-    this.refreshCargoUI();
-  }
-
-  combineSelectedCargo() {
-    const item = this.cargo.find((entry) => entry.id === this.selectedCargoId);
-    if (!item || !item.combineKey) {
-      this.showMessage('That item cannot be combined.');
-      return;
-    }
-
-    if (item.rarityIndex >= RARITIES.length - 1) {
-      this.showMessage('That item is already at peak rarity.');
-      return;
-    }
-
-    const match = this.cargo.find(
-      (entry) => entry.id !== item.id && entry.combineKey === item.combineKey && entry.rarityIndex === item.rarityIndex
-    );
-    if (!match) {
-      this.showMessage('No matching duplicate found in the hold.');
-      return;
-    }
-
-    const newItem = {
-      ...item,
-      id: crypto.randomUUID(),
-      safe: false,
-      rarityIndex: item.rarityIndex + 1
-    };
-
-    this.cargo = this.cargo.filter((entry) => entry.id !== item.id && entry.id !== match.id);
-    this.cargo.push(newItem);
-    this.selectedCargoId = newItem.id;
-    this.showMessage(`${item.label} improved to ${RARITIES[newItem.rarityIndex]}.`);
-    this.refreshCargoUI();
-  }
-
-  processSelectedCargo() {
-    const item = this.cargo.find((entry) => entry.id === this.selectedCargoId);
-    if (!item) {
-      this.showMessage('Select a cargo item first.');
-      return;
-    }
-
-    const yields = item.category === 'resource'
-      ? { [item.resourceKey]: item.amount }
-      : this.getProcessingYield(item);
-
-    for (const key of RESOURCE_KEYS) {
-      this.pendingResources[key] += yields[key] ?? 0;
-    }
-
-    this.cargo = this.cargo.filter((entry) => entry.id !== item.id);
-    this.selectedCargoId = null;
-    this.showMessage(`Processed ${item.label} into resources.`);
-    this.refreshCargoUI();
+    this.setCargoPanelOpen(false);
   }
 
   getProcessingYield(item) {
@@ -1793,44 +1846,98 @@ class Game {
   }
 
   refreshCargoUI() {
-    const safeCount = this.cargo.filter((item) => item.safe).length;
-    this.hud.cargo.textContent = `${this.cargo.length} / ${CONFIG.cargoCapacity}`;
+    const filledCount = this.getFilledCargoCount();
+    const safeCount = this.getSafeSlotCount();
+    this.hud.cargo.textContent = `${filledCount} / ${CONFIG.cargoCapacity}`;
     this.hud.safe.textContent = `${safeCount} / ${CONFIG.safeStorageCapacity}`;
-    this.hud.cargoBar.style.width = `${(this.cargo.length / CONFIG.cargoCapacity) * 100}%`;
-    this.hud.safeBar.style.width = `${(safeCount / CONFIG.safeStorageCapacity) * 100}%`;
+    this.manifestLabel.textContent = this.isCargoPanelOpen ? 'Hide Hold' : 'Manifest';
     this.hud.scrap.textContent = `${this.meta.resources.scrap + this.pendingResources.scrap}`;
     this.hud.tech.textContent = `${this.meta.resources.tech + this.pendingResources.tech}`;
     this.hud.biomass.textContent = `${this.meta.resources.biomass + this.pendingResources.biomass}`;
     this.hud.credits.textContent = `${this.meta.resources.credits + this.pendingResources.credits}`;
 
-    this.cargoList.innerHTML = '';
-    for (const item of this.cargo) {
+    this.cargoGrid.innerHTML = '';
+    for (let index = 0; index < this.cargoSlots.length; index += 1) {
+      const item = this.cargoSlots[index];
       const button = document.createElement('button');
-      button.className = 'cargo-entry';
-      if (item.id === this.selectedCargoId) {
+      button.type = 'button';
+      button.className = 'cargo-slot';
+      if (index < CONFIG.safeStorageCapacity) {
+        button.classList.add('safe-slot');
+      }
+      if (index === this.selectedCargoIndex) {
         button.classList.add('selected');
       }
-      if (item.safe) {
-        button.classList.add('safe');
+
+      if (item) {
+        button.classList.add('occupied', `category-${item.category}`, `rarity-${item.rarityIndex}`);
+        const metaValue = item.category === 'resource' ? `${item.amount}` : RARITIES[item.rarityIndex];
+        button.innerHTML = `
+          <div class="slot-header">
+            <span class="slot-index">Cell ${String(index + 1).padStart(2, '0')}</span>
+            <span class="slot-icon">${this.getCargoItemIcon(item)}</span>
+          </div>
+          <div class="slot-label">${item.label}</div>
+          <div class="slot-meta">
+            <span>${metaValue}</span>
+            <span class="slot-safe-tag">${index < CONFIG.safeStorageCapacity ? 'SAFE' : 'HOLD'}</span>
+          </div>
+        `;
+
+        let holdTimer = null;
+        let consumedByHold = false;
+        let pointerStart = null;
+        const clearHold = () => {
+          if (holdTimer) {
+            window.clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+          pointerStart = null;
+        };
+
+        button.addEventListener('pointerdown', (event) => {
+          consumedByHold = false;
+          clearHold();
+          pointerStart = { x: event.clientX, y: event.clientY };
+          holdTimer = window.setTimeout(() => {
+            consumedByHold = true;
+            this.processCargoSlot(index);
+          }, 420);
+        });
+        button.addEventListener('pointermove', (event) => {
+          if (!pointerStart) {
+            return;
+          }
+          if (Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 12) {
+            clearHold();
+          }
+        });
+        button.addEventListener('pointerup', clearHold);
+        button.addEventListener('pointerleave', clearHold);
+        button.addEventListener('pointercancel', clearHold);
+        button.addEventListener('click', () => {
+          if (consumedByHold) {
+            consumedByHold = false;
+            return;
+          }
+          this.handleCargoSlotTap(index);
+        });
+      } else {
+        button.classList.add('empty');
+        button.innerHTML = `
+          <div class="slot-header">
+            <span class="slot-index">${index < CONFIG.safeStorageCapacity ? 'Safe' : 'Hold'}</span>
+            <span class="slot-icon">${index < CONFIG.safeStorageCapacity ? 'FTL' : '--'}</span>
+          </div>
+          <div class="slot-label">${index < CONFIG.safeStorageCapacity ? 'Reserved jump storage' : 'Empty cargo cell'}</div>
+          <div class="slot-meta">
+            <span>Cell ${String(index + 1).padStart(2, '0')}</span>
+          </div>
+        `;
+        button.addEventListener('click', () => this.handleCargoSlotTap(index));
       }
 
-      const rarity = RARITIES[item.rarityIndex] ?? 'Base';
-      const suffix = item.category === 'resource' ? `${item.amount}` : rarity;
-      button.innerHTML = `
-        <div>
-          <div>${item.label}</div>
-          <div class="cargo-meta">
-            <span>${item.category}</span>
-            <span>${suffix}</span>
-          </div>
-        </div>
-        <div class="cargo-meta">${item.safe ? 'SAFE' : 'LOOSE'}</div>
-      `;
-      button.addEventListener('click', () => {
-        this.selectedCargoId = item.id;
-        this.refreshCargoUI();
-      });
-      this.cargoList.appendChild(button);
+      this.cargoGrid.appendChild(button);
     }
   }
 
