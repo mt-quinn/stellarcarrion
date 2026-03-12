@@ -3087,6 +3087,10 @@ class Game {
   }
 
   updateCamera(dt) {
+    if (!this.player) {
+      return;
+    }
+
     const target = this.player.getWorldPosition();
     this.camera.position.x = lerp(this.camera.position.x, target.x, 0.09);
     this.camera.position.z = lerp(this.camera.position.z, target.z + 36, 0.09);
@@ -3107,12 +3111,38 @@ class Game {
       }
 
       this.updateShips(dt);
+      if (!this.runActive || !this.player) {
+        this.updateEffects(dt);
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
+
       this.updateProjectiles(dt);
+      if (!this.runActive || !this.player) {
+        this.updateEffects(dt);
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
+
       this.updatePickups(dt);
+      if (!this.runActive || !this.player) {
+        this.updateEffects(dt);
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
+
       this.updateWarpDemons(dt);
+      if (!this.runActive || !this.player) {
+        this.updateEffects(dt);
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
+
       this.updateExtraction(dt);
-      this.updateCamera(dt);
-      this.refreshHUD();
+      if (this.runActive && this.player) {
+        this.updateCamera(dt);
+        this.refreshHUD();
+      }
     }
 
     this.updateEffects(dt);
